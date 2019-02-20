@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O -Wall -Wstrict-prototypes -Wextra -g
+CFLAGS = -Wall -Wstrict-prototypes -Wextra -g
 SRC = ./src
 LIB = ./lib
 BIN = ./bin
@@ -17,8 +17,11 @@ clean:
 	rm $(LIB)/*.o
 	rm $(BIN)/router
 
-$(BIN)/router: $(LIB)/main.o
+$(BIN)/router: $(LIB)/main.o $(LIB)/config.o
 	$(CC) $(CFLAGS) $^ -o $@
+
+$(LIB)/config.o: $(SRC)/config.c
+	$(CC) -c $(CFLAGS) $^ -o $@
 
 $(LIB)/main.o: $(SRC)/main.c
 	$(CC) -c $(CFLAGS) $^ -o $@
