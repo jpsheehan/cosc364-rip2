@@ -3,6 +3,25 @@ A routing daemon based on the RIP-2 specification.
 
 Written by Will Cowper (<wgc22@uclive.ac.nz>) and Jesse Sheehan (<jps111@uclive.ac.nz>).
 
+## Building
+
+All object files are compiled to the `./lib/` folder, and the program is compiled to `./bin/router`.
+
+To build the program, run
+```bash
+make
+```
+
+To run the program, run
+```bash
+make run
+```
+
+To clean the build tree, run
+```bash
+make clean
+```
+
 ## Modules
 A module is just a single part of the overall program. It would be useful to break the assignment down into discrete problems that can be dealt with individually. 
 
