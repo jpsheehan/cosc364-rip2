@@ -32,7 +32,6 @@ int main(int argc, char *argv[])
 
       if (config != NULL)
       {
-        printf("The configuration file was read:\n");
         config_save(config, stdout);
       }
       else

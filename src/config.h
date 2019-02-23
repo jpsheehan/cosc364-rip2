@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include "linked_list.h"
 
 struct s_output_port
 {
@@ -16,8 +17,8 @@ typedef struct s_output_port OutputPort;
 struct s_config
 {
   uint16_t router_id;
-  uint16_t *input_ports;
-  OutputPort *output_ports;
+  LinkedList *input_ports;
+  LinkedList *output_ports;
 };
 
 typedef struct s_config Config;

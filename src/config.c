@@ -39,9 +39,9 @@ void output_port_destroy(OutputPort *op)
  * 
  * Returns the number of characters written.
  */
-int output_port_to_string(OutputPort *op, char *str)
+void output_port_print(OutputPort *op, FILE *fd)
 {
-  return sprintf(str, "%u-%u-%u", op->port_number, op->link_cost, op->router_id);
+  fprintf(fd, "%u-%u-%u", op->port_number, op->link_cost, op->router_id);
 }
 
 #pragma endregion
@@ -55,8 +55,14 @@ int output_port_to_string(OutputPort *op, char *str)
  */
 Config *config_load(FILE *fd)
 {
-  // STUB
-  return NULL;
+  Config *config = malloc(sizeof(Config));
+  if (config)
+  {
+    config->router_id = 1;
+    config->input_ports = linked_list_create((void *)2000);
+    config->output_ports = linked_list_create(output_port_create(3000, 1, 2));
+  }
+  return config;
 }
 
 /**
@@ -64,11 +70,33 @@ Config *config_load(FILE *fd)
  */
 void config_save(Config *config, FILE *fd)
 {
+  LinkedList *index = NULL;
+
+  // print the router-id
   fprintf(fd, "router-id %u\n", config->router_id);
 
+  // print the input-ports one at a time with a comma and a space in between
+  index = config->input_ports;
   fprintf(fd, "input-ports ");
+  fprintf(fd, "%lu", (uint64_t)index->value);
+  while (index->next)
+  {
+    index = index->next;
+    fprintf(fd, ", %lu", (uint64_t)index->value);
+  }
+  fprintf(fd, "%c", '\n');
 
+  // print the output-ports one at a time with a comma and a space in between
+  index = config->output_ports;
   fprintf(fd, "output-ports ");
+  output_port_print(index->value, fd);
+  while (index->next)
+  {
+    index = index->next;
+    fprintf(fd, "%s", ", ");
+    output_port_print(index->value, fd);
+  }
+  fprintf(fd, "%c", '\n');
 
   fflush(fd);
 }
