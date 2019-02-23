@@ -64,7 +64,13 @@ Config *config_load(FILE *fd)
  */
 void config_save(Config *config, FILE *fd)
 {
-  // STUB
+  fprintf(fd, "router-id %u\n", config->router_id);
+
+  fprintf(fd, "input-ports ");
+
+  fprintf(fd, "output-ports ");
+
+  fflush(fd);
 }
 
 #pragma endregion
