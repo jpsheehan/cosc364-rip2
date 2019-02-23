@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wstrict-prototypes -Wextra -g
+CFLAGS = -Wall -Wno-unknown-pragmas -Wstrict-prototypes -Wextra -g
 SRC = ./src
 LIB = ./lib
 BIN = ./bin
