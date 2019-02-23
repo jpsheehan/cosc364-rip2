@@ -4,6 +4,7 @@
 #define EXIT_OK 0
 #define EXIT_BAD_USAGE 1
 #define EXIT_BAD_FILENAME 2
+#define EXIT_BAD_CONFIGURATION 3
 
 void print_bad_usage(char program_name[]);
 void print_bad_filename(char filename[]);

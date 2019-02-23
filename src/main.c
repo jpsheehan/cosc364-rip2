@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include "main.h"
+#include "config.h"
 
 /**
  * Checks the arguments passed in, loads the configuration and starts the servers.
@@ -22,7 +23,24 @@ int main(int argc, char *argv[])
     }
     else
     {
-      printf("The configuration file is located at '%s'\n", argv[1]);
+      // read the configuration from the file.
+      printf("Reading configuration from '%s'... ", argv[1]);
+      FILE *file = fopen(argv[1], "r");
+      Config *config = config_load(file);
+      fclose(file);
+      printf("Done!\n");
+
+      if (config != NULL)
+      {
+        printf("The configuration file was read:\n");
+        config_save(config, stdout);
+      }
+      else
+      {
+        printf("An error occurred reading the configuration file.\n");
+        return EXIT_BAD_CONFIGURATION;
+      }
+
       return EXIT_OK;
     }
   }
