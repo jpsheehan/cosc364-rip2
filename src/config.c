@@ -58,9 +58,17 @@ Config *config_load(FILE *fd)
   Config *config = malloc(sizeof(Config));
   if (config)
   {
+    // this is the hardcoded configuration from ./configs/one.conf
+    LinkedList *input_ports = linked_list_create((void *)6110);
+    linked_list_append(input_ports, (void *)6201);
+    linked_list_append(input_ports, (void *)7345);
+
+    LinkedList *outport_ports = linked_list_create(output_port_create(5000, 1, 1));
+    linked_list_append(outport_ports, output_port_create(5002, 5, 4));
+
     config->router_id = 1;
-    config->input_ports = linked_list_create((void *)2000);
-    config->output_ports = linked_list_create(output_port_create(3000, 1, 2));
+    config->input_ports = input_ports;
+    config->output_ports = outport_ports;
   }
   return config;
 }
