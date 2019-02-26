@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
   }
   else
   {
+    // check if the file doesn't exist
     if (access(argv[1], F_OK) == -1)
     {
       print_bad_filename(argv[1]);
