@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "main.h"
 #include "config.h"
@@ -16,33 +17,42 @@ int main(int argc, char *argv[])
   }
   else
   {
-    // check if the file doesn't exist
-    if (access(argv[1], F_OK) == -1)
+    FILE *file = NULL;
+
+    if (strcmp(argv[1], "--") == 0)
     {
-      print_bad_filename(argv[1]);
-      return EXIT_BAD_FILENAME;
+      // read the configuration from stdin
+      printf("%s", "Reading configuration from standard input... ");
+      file = stdin;
     }
-    else
+    else if (access(argv[1], F_OK) != -1)
     {
       // read the configuration from the file.
       printf("Reading configuration from '%s'... ", argv[1]);
-      FILE *file = fopen(argv[1], "r");
-      Config *config = config_load(file);
-      fclose(file);
-      printf("Done!\n");
-
-      if (config != NULL)
-      {
-        config_save(config, stdout);
-      }
-      else
-      {
-        printf("An error occurred reading the configuration file.\n");
-        return EXIT_BAD_CONFIGURATION;
-      }
-
-      return EXIT_OK;
+      file = fopen(argv[1], "r");
     }
+    else
+    {
+      // if the file doesn't exist
+      print_bad_filename(argv[1]);
+      return EXIT_BAD_FILENAME;
+    }
+
+    Config *config = config_load(file);
+    fclose(file);
+    printf("Done!\n");
+
+    if (config != NULL)
+    {
+      config_save(config, stdout);
+    }
+    else
+    {
+      printf("An error occurred reading the configuration file.\n");
+      return EXIT_BAD_CONFIGURATION;
+    }
+
+    return EXIT_OK;
   }
 }
 
@@ -51,7 +61,7 @@ int main(int argc, char *argv[])
  */
 void print_bad_usage(char program_name[])
 {
-  printf("Usage: %s path/to/config/file.txt\n", program_name);
+  printf("Usage: %s [ -- | filename ]\n", program_name);
 }
 
 /**
