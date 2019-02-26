@@ -116,4 +116,5 @@ bool config_is_valid(Config *config)
 void config_destroy(Config *config)
 {
   // TODO: Implement
+  //
 }
