@@ -1,6 +1,7 @@
 #ifndef _H_CONFIG
 #define _H_CONFIG
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include "linked_list.h"
@@ -23,15 +24,12 @@ struct s_config
 
 typedef struct s_config Config;
 
-/**
- * Loads the configuration data from an open file.
- * Returns NULL if the configuration is invalid or could not be read.
- */
 Config *config_load(FILE *fd);
 
-/**
- * Saves the configuration to a file.
- */
 void config_save(Config *config, FILE *fd);
+
+bool config_is_valid(Config *config);
+
+void config_destroy(Config *config);
 
 #endif

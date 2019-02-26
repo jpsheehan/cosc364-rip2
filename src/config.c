@@ -55,10 +55,16 @@ void output_port_print(OutputPort *op, FILE *fd)
  */
 Config *config_load(FILE *fd)
 {
-  Config *config = malloc(sizeof(Config));
+  Config *config = NULL;
+  config = malloc(sizeof(Config));
+
   if (config)
   {
-    // this is the hardcoded configuration from ./configs/one.conf
+    // this is the hardcoded configuration from ./configs/one.conf:
+    // router-id 1
+    // input-ports 6110, 6201, 7345
+    // output-ports 5000-1-1, 5002-5-4
+
     LinkedList *input_ports = linked_list_create((void *)6110);
     linked_list_append(input_ports, (void *)6201);
     linked_list_append(input_ports, (void *)7345);
@@ -69,6 +75,14 @@ Config *config_load(FILE *fd)
     config->router_id = 1;
     config->input_ports = input_ports;
     config->output_ports = outport_ports;
+
+    // TODO: Implement actual reading here
+
+    if (!config_is_valid(config))
+    {
+      config_destroy(config);
+      config = NULL;
+    }
   }
   return config;
 }
@@ -107,6 +121,45 @@ void config_save(Config *config, FILE *fd)
   fprintf(fd, "%c", '\n');
 
   fflush(fd);
+}
+
+/**
+ * Returns true if if the configuration is valid. The specification for a valid
+ * configuration can be found in section 4.1 of the assignment spec.
+ */
+bool config_is_valid(Config *config)
+{
+  // router_id:
+  // - must be a positive integer between 1 and 64000
+
+  // input_ports:
+  // - a positive integer between 1024 and 64000 (inclusive)
+  // - each port_number can occur only once in the list of input_ports
+
+  // output_ports:
+  //   port_number:
+  //   - must satisfy the same conditions as the input_ports
+  //   - none of the output port numbers should match the input_ports
+  //   link_cost:
+  //   - should conform to the conditions listed in the RIP RFC
+  //   router_id:
+  //   - should *probably* be unique amoungst all output_ports and the router_id
+  //     of this configuration
+
+  // timers (not implemented yet):
+  // - these should have a ratio of 6
+
+  // TODO: Implement
+
+  return false;
+}
+
+/**
+ * Frees the space used by the Config and its children.
+ */
+void config_destroy(Config *config)
+{
+  // TODO: Implement
 }
 
 #pragma endregion
