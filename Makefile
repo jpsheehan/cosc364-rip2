@@ -17,13 +17,16 @@ clean:
 	rm $(LIB)/*.o
 	rm $(BIN)/router
 
-$(BIN)/router: $(LIB)/main.o $(LIB)/config.o $(LIB)/linked_list.o
+$(BIN)/router: $(LIB)/main.o $(LIB)/config.o $(LIB)/linked_list.o $(LIB)/output_port.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 $(LIB)/config.o: $(SRC)/config.c
 	$(CC) -c $(CFLAGS) $^ -o $@
 
 $(LIB)/linked_list.o: $(SRC)/linked_list.c
+	$(CC) -c $(CFLAGS) $^ -o $@
+
+$(LIB)/output_port.o: $(SRC)/output_port.c
 	$(CC) -c $(CFLAGS) $^ -o $@
 
 $(LIB)/main.o: $(SRC)/main.c

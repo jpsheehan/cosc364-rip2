@@ -6,15 +6,6 @@
 #include <stdio.h>
 #include "linked_list.h"
 
-struct s_output_port
-{
-  uint16_t port_number;
-  uint16_t link_cost;
-  uint16_t router_id;
-};
-
-typedef struct s_output_port OutputPort;
-
 struct s_config
 {
   uint16_t router_id;
