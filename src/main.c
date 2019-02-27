@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
     else
     {
       printf("An error occurred reading the configuration file.\n");
+      config_destroy(config);
       return EXIT_BAD_CONFIGURATION;
     }
 

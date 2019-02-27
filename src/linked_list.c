@@ -59,9 +59,9 @@ void linked_list_destroy(LinkedList *head)
     LinkedList *next = this->next;
     while (this)
     {
+      next = this->next;
       free(this);
       this = next;
-      next = this->next;
     }
   }
 }
