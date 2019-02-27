@@ -4,6 +4,11 @@
 #include "config.h"
 #include "output_port.h"
 
+#define MIN_ID 1
+#define MAX_ID 64000
+#define MIN_PORT 1024
+#define MAX_PORT 64000
+
 /**
  * Loads the configuration data from an open file.
  * 
@@ -80,17 +85,57 @@ void config_save(Config *config, FILE *fd)
 }
 
 /**
- * Returns true if if the configuration is valid. The specification for a valid
+ * Returns true if the configuration is valid. The specification for a valid
  * configuration can be found in section 4.1 of the assignment spec.
  */
 bool config_is_valid(Config *config)
 {
-  // router_id:
-  // - must be a positive integer between 1 and 64000
+  LinkedList *indexOutput = NULL;
+  LinkedList *indexInput = NULL;
+  // Checking for null pointer
+  if (!config) {
+    return false;
+  }
+
+  indexInput = config->input_ports;
+  indexOutput = config->output_ports;
+  // router_id must be a positive integer between 1 and 64000
+  // TODO: should be unique?
+  if (config->router_id < MIN_ID || config->router_id > MAX_ID) {
+    return false;
+  }
 
   // input_ports:
   // - a positive integer between 1024 and 64000 (inclusive)
   // - each port_number can occur only once in the list of input_ports
+
+  // Check for a null list
+  if (!indexInput || !indexOutput)
+  {
+    return false;
+  }
+  // Loop over the input_ports linked list
+  // TODO: Check for duplicates
+  while (indexInput)
+  {
+    if (indexInput->value < MIN_PORT || indexInput->value > MAX_PORT) 
+    {
+      return false;
+    }
+    indexInput = indexInput->next;
+  }
+
+  // Loop over the output_ports linked list
+  // TODO: Check for duplicates and that output port is not shared with input
+
+    while (indexOutput)
+  {
+    if (indexOutput->value < MIN_PORT || indexOutput->value > MAX_PORT) 
+    {
+      return false;
+    }
+    indexOutput = indexOutput->next;
+  }
 
   // output_ports:
   //   port_number:
@@ -105,9 +150,19 @@ bool config_is_valid(Config *config)
   // timers (not implemented yet):
   // - these should have a ratio of 6
 
-  // TODO: Implement
+  // TODO: Implement timers
 
   return true;
+}
+
+
+/**
+ * Returns true if a given integer only occurs once in a linked list. 
+ */
+void is_unique(Config *config, uint16_t num)
+{
+  // TODO: Implement
+  //
 }
 
 /**
