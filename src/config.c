@@ -115,6 +115,29 @@ bool config_is_valid(Config *config)
  */
 void config_destroy(Config *config)
 {
-  // TODO: Implement
-  //
+  if (config)
+  {
+
+    // destroy the input ports
+    linked_list_destroy(config->input_ports);
+
+    if (config->output_ports)
+    {
+      // iterate through each output port and free it
+      LinkedList *next = config->output_ports->next;
+      output_port_destroy(config->output_ports->value);
+
+      while (next)
+      {
+        LinkedList *this = next;
+        next = this->next;
+        output_port_destroy(this->value);
+      }
+    }
+    // destroy the output ports
+    linked_list_destroy(config->output_ports);
+
+    // free the config struct
+    free(config);
+  }
 }
