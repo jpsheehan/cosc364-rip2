@@ -10,7 +10,7 @@ run: $(BIN)/router
 	$(BIN)/router
 
 rebuild:
-	make cleang
+	make clean
 	make build
 
 clean:
