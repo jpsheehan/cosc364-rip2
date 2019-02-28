@@ -10,12 +10,15 @@ run: $(BIN)/router
 	$(BIN)/router
 
 rebuild:
-	make clean
+	make cleang
 	make build
 
 clean:
 	rm $(LIB)/*.o
 	rm $(BIN)/router
+
+debug: $(BIN)/router
+	gdb --args $(BIN)/router ./configs/one.conf
 
 $(BIN)/router: $(LIB)/main.o $(LIB)/config.o $(LIB)/linked_list.o $(LIB)/output_port.o
 	$(CC) $(CFLAGS) $^ -o $@
