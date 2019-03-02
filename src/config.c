@@ -26,7 +26,6 @@ void process_output_ports(Config *config, char *str)
     uint16_t port_number, link_cost, router_id;
     if (sscanf(token, "%hu-%hu-%hu", &port_number, &link_cost, &router_id) == 3)
     {
-      printf("Haha");
       OutputPort *output_port = output_port_create(port_number, link_cost, router_id);
 
       // create a new linked list (if this is the first input port)
@@ -40,10 +39,6 @@ void process_output_ports(Config *config, char *str)
       {
         linked_list_append(config->output_ports, output_port);
       }
-    }
-    else
-    {
-      printf("shit\n");
     }
 
     // get the next token
@@ -119,12 +114,7 @@ void process_line(Config *config, char *line)
       }
       else if (strncmp(line, "output-ports", option_len) == 0)
       {
-        printf("DOing output ports");
         process_output_ports(config, value);
-      }
-      else
-      {
-        printf("Nah bro");
       }
     }
   }
@@ -176,10 +166,22 @@ Config *config_load(FILE *fd)
     buffer[file_length] = '\0';
 
     // get the first line
-    char *line = strtok(buffer, "\n");
+    char *line = buffer;
 
-    while (line)
+    while ((line - buffer) < file_length)
     {
+      char *eol = strchr(line, '\n');
+
+      if (eol)
+      {
+        // remove the newline
+        *eol = '\0';
+      }
+      else
+      {
+        eol = line + strlen(line);
+      }
+
       // remove the (possible) carriage return
       char *cr = strchr(line, '\r');
       if (cr)
@@ -189,14 +191,11 @@ Config *config_load(FILE *fd)
 
       process_line(config, line);
 
-      line = strtok(NULL, "\n");
+      // get the next line
+      line = eol + 1;
     }
 
-    free(line);
-
     free(buffer);
-
-    config_save(config, stdout);
 
     if (!config_is_valid(config))
     {
@@ -280,11 +279,11 @@ bool config_is_valid(Config *config)
   // Loop over the input_ports linked list
   while (indexInput)
   {
-    if (*(int *)indexInput->value < MIN_PORT || *(int *)indexInput->value > MAX_PORT)
+    if ((uintptr_t)indexInput->value < MIN_PORT || (uintptr_t)indexInput->value > MAX_PORT)
     {
       return false;
     }
-    if (!is_unique(indexInput->next, *(int *)indexInput->value))
+    if (!is_unique(indexInput->next, (uintptr_t)indexInput->value))
     {
       return false;
     }
@@ -293,16 +292,16 @@ bool config_is_valid(Config *config)
   // Loop over the output_ports linked list
   while (indexOutput)
   {
-    if (*(int *)indexOutput->value < MIN_PORT || *(int *)indexOutput->value > MAX_PORT)
+    if ((uintptr_t)indexOutput->value < MIN_PORT || (uintptr_t)indexOutput->value > MAX_PORT)
     {
       return false;
     }
-    if (!is_unique(indexOutput->next, *(int *)indexOutput->value))
+    if (!is_unique(indexOutput->next, (uintptr_t)indexOutput->value))
     {
       return false;
     }
     // Checking that outport port is not already in use by an input port
-    if (!is_unique(config->input_ports, *(int *)indexOutput->value))
+    if (!is_unique(config->input_ports, (uintptr_t)indexOutput->value))
     {
       return false;
     }
@@ -324,9 +323,9 @@ bool is_unique(LinkedList *ll, uint16_t num)
 // We pass a pointer to the next element in the list from the port of interest and then check from there
 // So we expect to find no occurances of the port num in the remainder of the linked list
 {
-  while (ll->next)
+  while (ll)
   {
-    if (*(int *)ll->value == num)
+    if ((uintptr_t)ll->value == num)
     {
       return false;
     }
