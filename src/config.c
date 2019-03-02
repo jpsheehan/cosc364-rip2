@@ -1,13 +1,134 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "config.h"
 #include "output_port.h"
+#include "linked_list.h"
 
 #define MIN_ID 1
 #define MAX_ID 64000
 #define MIN_PORT 1024
 #define MAX_PORT 64000
+#define BUFFER_START_SIZE 2
+
+/**
+ * Reads the output ports from the config and updates the struct.
+ */
+void process_output_ports(Config *config, char *str)
+{
+  // get the first token
+  char *token = strtok(str, ",");
+
+  while (token)
+  {
+    // extract the port number
+    uint16_t port_number, link_cost, router_id;
+    if (sscanf(token, "%hu-%hu-%hu", &port_number, &link_cost, &router_id) == 3)
+    {
+      printf("Haha");
+      OutputPort *output_port = output_port_create(port_number, link_cost, router_id);
+
+      // create a new linked list (if this is the first input port)
+      //  -or-
+      // append this port to the existing linked list
+      if (config->output_ports == NULL)
+      {
+        config->output_ports = linked_list_create(output_port);
+      }
+      else
+      {
+        linked_list_append(config->output_ports, output_port);
+      }
+    }
+    else
+    {
+      printf("shit\n");
+    }
+
+    // get the next token
+    token = strtok(NULL, ",");
+  }
+}
+
+/**
+ * Reads the input ports from the config and updates the struct.
+ */
+void process_input_ports(Config *config, char *str)
+{
+  // get the first token
+  char *token = strtok(str, ",");
+
+  while (token)
+  {
+    // extract the port number
+    uint16_t port;
+    if (sscanf(token, "%hu", &port) == 1)
+    {
+      // create a new linked list (if this is the first input port)
+      //  -or-
+      // append this port to the existing linked list
+      if (config->input_ports == NULL)
+      {
+        config->input_ports = linked_list_create((void *)(uintptr_t)port);
+      }
+      else
+      {
+        linked_list_append(config->input_ports, (void *)(uintptr_t)port);
+      }
+    }
+
+    // get the next token
+    token = strtok(NULL, ",");
+  }
+}
+
+/**
+ * Reads the router id from the config and updates the struct.
+ */
+void process_router_id(Config *config, char *str)
+{
+  sscanf(str, "%hu", &config->router_id);
+}
+
+/**
+ * Modifies the configuration depending on what the contents of the line is.
+ */
+void process_line(Config *config, char *line)
+{
+  // each line in the configuration file is in the format:
+  // <option> <value>
+  //
+  // so we compare the <option> to several expected options and perform a
+  // specific task based on the <value>
+  char *first_space_ptr = strchr(line, ' ');
+  if (first_space_ptr)
+  {
+    size_t option_len = first_space_ptr - line;
+    if (option_len)
+    {
+      char *value = first_space_ptr + 1;
+
+      if (strncmp(line, "router-id", option_len) == 0)
+      {
+        process_router_id(config, value);
+      }
+      else if (strncmp(line, "input-ports", option_len) == 0)
+      {
+        process_input_ports(config, value);
+      }
+      else if (strncmp(line, "output-ports", option_len) == 0)
+      {
+        printf("DOing output ports");
+        process_output_ports(config, value);
+      }
+      else
+      {
+        printf("Nah bro");
+      }
+    }
+  }
+}
 
 /**
  * Loads the configuration data from an open file.
@@ -19,25 +140,63 @@ Config *config_load(FILE *fd)
   Config *config = NULL;
   config = malloc(sizeof(Config));
 
-  if (config)
+  // the buffer will grow depending on how much data is read. It will attempt to read in the entire file at once.
+  char *buffer = NULL;
+  long buffer_size = BUFFER_START_SIZE;
+  buffer = malloc(buffer_size);
+
+  long file_length = -1;
+
+  if (config && buffer)
   {
-    // this is the hardcoded configuration from ./configs/one.conf:
-    // router-id 1
-    // input-ports 6110, 6201, 7345
-    // output-ports 5000-1-1, 5002-5-4
 
-    LinkedList *input_ports = linked_list_create((void *)6110);
-    linked_list_append(input_ports, (void *)6201);
-    linked_list_append(input_ports, (void *)7345);
+    // read the entire file into the buffer
+    fread(buffer, 1, buffer_size, fd);
+    while (!feof(fd))
+    {
+      // double the size of the buffer and reallocate the memory
+      buffer_size *= 2;
+      buffer = realloc(buffer, buffer_size);
 
-    LinkedList *outport_ports = linked_list_create(output_port_create(5000, 1, 1));
-    linked_list_append(outport_ports, output_port_create(5002, 5, 4));
+      // read the next chunk
+      fread(buffer + buffer_size / 2, 1, buffer_size / 2, fd);
+    }
 
-    config->router_id = 1;
-    config->input_ports = input_ports;
-    config->output_ports = outport_ports;
+    // get the actual number of bytes read
+    file_length = ftell(fd);
 
-    // TODO: Implement actual reading here
+    // perhaps add an extra byte for the null terminator
+    if (file_length == buffer_size)
+    {
+      buffer_size += 1;
+      buffer = realloc(buffer, buffer_size);
+    }
+
+    // add the null terminator
+    buffer[file_length] = '\0';
+
+    // get the first line
+    char *line = strtok(buffer, "\n");
+
+    while (line)
+    {
+      // remove the (possible) carriage return
+      char *cr = strchr(line, '\r');
+      if (cr)
+      {
+        *cr = '\0';
+      }
+
+      process_line(config, line);
+
+      line = strtok(NULL, "\n");
+    }
+
+    free(line);
+
+    free(buffer);
+
+    config_save(config, stdout);
 
     if (!config_is_valid(config))
     {
@@ -59,27 +218,33 @@ void config_save(Config *config, FILE *fd)
   fprintf(fd, "router-id %u\n", config->router_id);
 
   // print the input-ports one at a time with a comma and a space in between
-  index = config->input_ports;
-  fprintf(fd, "input-ports ");
-  fprintf(fd, "%lu", (uint64_t)index->value);
-  while (index->next)
+  if (config->input_ports)
   {
-    index = index->next;
-    fprintf(fd, ", %lu", (uint64_t)index->value);
+    index = config->input_ports;
+    fprintf(fd, "input-ports ");
+    fprintf(fd, "%lu", (uint64_t)index->value);
+    while (index->next)
+    {
+      index = index->next;
+      fprintf(fd, ", %lu", (uint64_t)index->value);
+    }
+    fprintf(fd, "%c", '\n');
   }
-  fprintf(fd, "%c", '\n');
 
   // print the output-ports one at a time with a comma and a space in between
-  index = config->output_ports;
-  fprintf(fd, "output-ports ");
-  output_port_print(index->value, fd);
-  while (index->next)
+  if (config->output_ports)
   {
-    index = index->next;
-    fprintf(fd, "%s", ", ");
+    index = config->output_ports;
+    fprintf(fd, "output-ports ");
     output_port_print(index->value, fd);
+    while (index->next)
+    {
+      index = index->next;
+      fprintf(fd, "%s", ", ");
+      output_port_print(index->value, fd);
+    }
+    fprintf(fd, "%c", '\n');
   }
-  fprintf(fd, "%c", '\n');
 
   fflush(fd);
 }
