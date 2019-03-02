@@ -292,7 +292,8 @@ bool config_is_valid(Config *config)
   // Loop over the output_ports linked list
   while (indexOutput)
   {
-    if ((uintptr_t)indexOutput->value < MIN_PORT || (uintptr_t)indexOutput->value > MAX_PORT)
+    OutputPort *port = indexOutput->value;
+    if (port->port_number < MIN_PORT || port->port_number > MAX_PORT)
     {
       return false;
     }
