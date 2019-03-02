@@ -93,21 +93,19 @@ bool config_is_valid(Config *config)
   LinkedList *indexOutput = NULL;
   LinkedList *indexInput = NULL;
   // Checking for null pointer
-  if (!config) {
+  if (!config)
+  {
     return false;
   }
 
   indexInput = config->input_ports;
   indexOutput = config->output_ports;
+
   // router_id must be a positive integer between 1 and 64000
-  // TODO: should be unique?
-  if (config->router_id < MIN_ID || config->router_id > MAX_ID) {
+  if (config->router_id < MIN_ID || config->router_id > MAX_ID)
+  {
     return false;
   }
-
-  // input_ports:
-  // - a positive integer between 1024 and 64000 (inclusive)
-  // - each port_number can occur only once in the list of input_ports
 
   // Check for a null list
   if (!indexInput || !indexOutput)
@@ -115,37 +113,36 @@ bool config_is_valid(Config *config)
     return false;
   }
   // Loop over the input_ports linked list
-  // TODO: Check for duplicates
   while (indexInput)
   {
-    if (indexInput->value < MIN_PORT || indexInput->value > MAX_PORT) 
+    if (*(int *)indexInput->value < MIN_PORT || *(int *)indexInput->value > MAX_PORT)
+    {
+      return false;
+    }
+    if (!is_unique(indexInput->next, *(int *)indexInput->value))
     {
       return false;
     }
     indexInput = indexInput->next;
   }
-
   // Loop over the output_ports linked list
-  // TODO: Check for duplicates and that output port is not shared with input
-
-    while (indexOutput)
+  while (indexOutput)
   {
-    if (indexOutput->value < MIN_PORT || indexOutput->value > MAX_PORT) 
+    if (*(int *)indexOutput->value < MIN_PORT || *(int *)indexOutput->value > MAX_PORT)
+    {
+      return false;
+    }
+    if (!is_unique(indexOutput->next, *(int *)indexOutput->value))
+    {
+      return false;
+    }
+    // Checking that outport port is not already in use by an input port
+    if (!is_unique(config->input_ports, *(int *)indexOutput->value))
     {
       return false;
     }
     indexOutput = indexOutput->next;
   }
-
-  // output_ports:
-  //   port_number:
-  //   - must satisfy the same conditions as the input_ports
-  //   - none of the output port numbers should match the input_ports
-  //   link_cost:
-  //   - should conform to the conditions listed in the RIP RFC
-  //   router_id:
-  //   - should *probably* be unique amoungst all output_ports and the router_id
-  //     of this configuration
 
   // timers (not implemented yet):
   // - these should have a ratio of 6
@@ -155,14 +152,22 @@ bool config_is_valid(Config *config)
   return true;
 }
 
-
 /**
- * Returns true if a given integer only occurs once in a linked list. 
+ * Returns true if a given integer is not contained in a linked list. 
  */
-void is_unique(Config *config, uint16_t num)
+bool is_unique(LinkedList *ll, uint16_t num)
+// We pass a pointer to the next element in the list from the port of interest and then check from there
+// So we expect to find no occurances of the port num in the remainder of the linked list
 {
-  // TODO: Implement
-  //
+  while (ll->next)
+  {
+    if (*(int *)ll->value == num)
+    {
+      return false;
+    }
+    ll = ll->next;
+  }
+  return true;
 }
 
 /**

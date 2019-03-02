@@ -23,4 +23,6 @@ bool config_is_valid(Config *config);
 
 void config_destroy(Config *config);
 
+bool is_unique(LinkedList *ll, uint16_t num);
+
 #endif
