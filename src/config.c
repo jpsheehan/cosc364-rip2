@@ -10,7 +10,7 @@
 #define MAX_ID 64000
 #define MIN_PORT 1024
 #define MAX_PORT 64000
-#define BUFFER_START_SIZE 2
+#define BUFFER_START_SIZE 256
 
 /**
  * Reads the output ports from the config and updates the struct.
