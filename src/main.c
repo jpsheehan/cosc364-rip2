@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
       return EXIT_BAD_CONFIGURATION;
     }
 
+    config_destroy(config);
     return EXIT_OK;
   }
 }
