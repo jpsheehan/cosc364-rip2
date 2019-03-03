@@ -20,6 +20,9 @@ clean:
 debug: $(BIN)/router
 	gdb --args $(BIN)/router ./configs/one.conf
 
+memcheck: $(BIN)/router
+	valgrind --leak-check=yes $(BIN)/router ./configs/one.conf
+
 $(BIN)/router: $(LIB)/main.o $(LIB)/config.o $(LIB)/linked_list.o $(LIB)/output_port.o
 	$(CC) $(CFLAGS) $^ -o $@
 
