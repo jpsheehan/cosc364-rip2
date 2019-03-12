@@ -23,7 +23,7 @@ debug: $(BIN)/router
 memcheck: $(BIN)/router
 	valgrind --leak-check=yes $(BIN)/router ./configs/one.conf
 
-$(BIN)/router: $(LIB)/main.o $(LIB)/config.o $(LIB)/linked_list.o $(LIB)/output_port.o
+$(BIN)/router: $(LIB)/main.o $(LIB)/config.o $(LIB)/linked_list.o $(LIB)/output_port.o $(LIB)/rip_protocol.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 $(LIB)/config.o: $(SRC)/config.c
@@ -33,6 +33,9 @@ $(LIB)/linked_list.o: $(SRC)/linked_list.c
 	$(CC) -c $(CFLAGS) $^ -o $@
 
 $(LIB)/output_port.o: $(SRC)/output_port.c
+	$(CC) -c $(CFLAGS) $^ -o $@
+
+$(LIB)/rip_protocol.o: $(SRC)/rip_protocol.c
 	$(CC) -c $(CFLAGS) $^ -o $@
 
 $(LIB)/main.o: $(SRC)/main.c
