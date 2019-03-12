@@ -1,20 +1,20 @@
 #include "rip_protocol.h"
 
-RipHeader *rip_header_create(uint16_t router_id, uint32_t metric)
+RipEntry *rip_entry_create(uint16_t router_id, uint32_t metric)
 {
-  RipHeader *rip_header = NULL;
-  rip_header = malloc(sizeof(RipHeader));
+  RipEntry *rip_entry = NULL;
+  rip_entry = malloc(sizeof(RipEntry));
 
-  if (rip_header)
+  if (rip_entry)
   {
-    rip_header->router_id = router_id;
-    rip_header->metric = metric;
+    rip_entry->router_id = router_id;
+    rip_entry->metric = metric;
   }
 
-  return rip_header;
+  return rip_entry;
 }
 
-void rip_header_destroy(RipHeader *rip_header)
+void rip_entry_destroy(RipEntry *rip_entry)
 {
-  free(rip_header);
+  free(rip_entry);
 }

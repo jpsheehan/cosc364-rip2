@@ -4,22 +4,22 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-struct s_rip_header
+struct s_rip_entry
 {
   uint16_t router_id;
   uint32_t metric;
 };
 
-typedef struct s_rip_header RipHeader;
+typedef struct s_rip_entry RipEntry;
 
 /**
- * Allocates a new RipHeader on the heap.
+ * Allocates a new RipEntry on the heap.
  */
-RipHeader *rip_header_create(uint16_t router_id, uint32_t metric);
+RipEntry *rip_entry_create(uint16_t router_id, uint32_t metric);
 
 /**
- * Frees the memory associated with the RipHeader.
+ * Frees the memory associated with the RipEntry.
  */
-void rip_header_destroy(RipHeader *rip_header);
+void rip_entry_destroy(RipEntry *rip_entry);
 
 #endif
