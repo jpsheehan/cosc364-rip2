@@ -256,6 +256,7 @@ bool config_is_valid(Config *config)
 {
   LinkedList *indexOutput = NULL;
   LinkedList *indexInput = NULL;
+  uint16_t port;
   // Checking for null pointer
   if (!config)
   {
@@ -279,11 +280,12 @@ bool config_is_valid(Config *config)
   // Loop over the input_ports linked list
   while (indexInput)
   {
-    if ((uintptr_t)indexInput->value < MIN_PORT || (uintptr_t)indexInput->value > MAX_PORT)
+    port = (uintptr_t)indexInput->value;
+    if (port < MIN_PORT || port > MAX_PORT)
     {
       return false;
     }
-    if (!is_unique(indexInput->next, (uintptr_t)indexInput->value))
+    if (!is_input_unique(indexInput->next, port))
     {
       return false;
     }
@@ -297,12 +299,12 @@ bool config_is_valid(Config *config)
     {
       return false;
     }
-    if (!is_unique(indexOutput->next, (uintptr_t)indexOutput->value))
+    if (!is_output_unique(indexOutput->next, port->port_number))
     {
       return false;
     }
     // Checking that outport port is not already in use by an input port
-    if (!is_unique(config->input_ports, (uintptr_t)indexOutput->value))
+    if (!is_input_unique(config->input_ports, port->port_number))
     {
       return false;
     }
@@ -320,13 +322,32 @@ bool config_is_valid(Config *config)
 /**
  * Returns true if a given integer is not contained in a linked list. 
  */
-bool is_unique(LinkedList *ll, uint16_t num)
+bool is_input_unique(LinkedList *ll, uint16_t num)
 // We pass a pointer to the next element in the list from the port of interest and then check from there
 // So we expect to find no occurances of the port num in the remainder of the linked list
 {
   while (ll)
   {
+    printf("Value: %lu, num: %d, next: %p\n", (uintptr_t)ll->value, num, ll->next);
     if ((uintptr_t)ll->value == num)
+    {
+      return false;
+    }
+    ll = ll->next;
+  }
+  return true;
+}
+
+/**
+ * Returns true if a given port num is not contained in a output port struct. 
+ */
+bool is_output_unique(LinkedList *ll, uint16_t num)
+{
+  while (ll)
+  {
+    OutputPort *port = ll->value;
+    printf("Value: %d, num: %d, next: %p\n", port->port_number, num, ll->next);
+    if (port->port_number == num)
     {
       return false;
     }
