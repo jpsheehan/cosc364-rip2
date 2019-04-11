@@ -1,6 +1,5 @@
 import socket
 import select
-import signal
 
 import timer
 
@@ -37,9 +36,6 @@ def server(config):
     while inputs:
         readable, _writable, exceptional = select.select(
             inputs, [], inputs)
-
-        # if len(readable) == 0 and len(writable) == 0 and len(exceptional) == 0:
-        #     print("timeout yo!")
 
         for sock in readable:
             conn, addr = sock.accept()
