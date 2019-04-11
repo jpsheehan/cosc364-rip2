@@ -2,6 +2,7 @@ import socket
 import select
 
 import timer
+from routing_table import RoutingTable
 
 # Creates a TCP IPv4 socket, binds it the host and port, and begins listening
 
@@ -14,28 +15,31 @@ def create_input_socket(port, host='localhost'):
 
 
 # Handles the incoming data
-
-
 def handle_incoming_data(conn):
     buffer = conn.recv(1024)
     conn.send(buffer)
 
 
 def handle_timer():
-    print("cool beans")
-
-    # Listens on all input ports for incoming RIP messages
+    print("send update message to neighbours...")
 
 
+# Listens on all input ports for incoming RIP messages
 def server(config):
     inputs = list(map(create_input_socket, config["input-ports"]))
 
     timer.init(config["periodic-timeout"], handle_timer)
     timer.start()
 
+    rt = RoutingTable()
+
     while inputs:
-        readable, _writable, exceptional = select.select(
-            inputs, [], inputs)
+        readable, writable, exceptional = select.select(
+            inputs, [], inputs, 1)
+
+        # every second, we check for routes to invalidate in the routing table
+        if len(readable) == 0 and len(writable) == 0 and len(exceptional) == 0:
+            rt.invalidate()
 
         for sock in readable:
             conn, addr = sock.accept()
