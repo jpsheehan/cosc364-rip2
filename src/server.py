@@ -64,8 +64,9 @@ def server(config):
 
         for sock in writable:
             outputs.remove(sock)
-            sock.send("data".encode("utf-8"))
-            # print("sent update")
+            sock.send("GET / HTTP/1.1\r\n\r\n".encode("utf-8"))
+            sock.recv(1024)
+            sock.close()
 
         # removes a socket from the input list if it raised an error
         for sock in exceptional:
