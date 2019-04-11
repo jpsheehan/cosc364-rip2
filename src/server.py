@@ -2,6 +2,8 @@ import socket
 import select
 import signal
 
+import timer
+
 # Creates a TCP IPv4 socket, binds it the host and port, and begins listening
 
 
@@ -20,22 +22,17 @@ def handle_incoming_data(conn):
     conn.send(buffer)
 
 
-def handle_timer(signum, frame):
-    print("cool beans", signum)
-    start_timer()
+def handle_timer():
+    print("cool beans")
 
-
-def start_timer():
-    signal.signal(signal.SIGALRM, handle_timer)
-    signal.alarm(5)
-
-# Listens on all input ports for incoming RIP messages
+    # Listens on all input ports for incoming RIP messages
 
 
 def server(config):
     inputs = list(map(create_input_socket, config["input-ports"]))
 
-    start_timer()
+    timer.init(config["periodic-timeout"], handle_timer)
+    timer.start()
 
     while inputs:
         readable, _writable, exceptional = select.select(
