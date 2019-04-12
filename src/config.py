@@ -1,4 +1,5 @@
 import configparser
+import os
 
 def read_config_file(file):
     config = configparser.ConfigParser()
@@ -8,14 +9,11 @@ def read_config_file(file):
     inputPorts = (config.get('DEFAULT', 'input-ports'))
     outputPorts = (config.get('DEFAULT', 'output-ports'))
     
-
     router["routerId"] = check_router_id(routerId)
-    
     router["inputPorts"] = check_input_ports(inputPorts)
+    router["outputPorts"] = check_output_ports(router, outputPorts)
     
-    router["outputPorts"] = check_output_ports(router)
-    
-    print(router)
+    return router
     
 def check_router_id(routerId):
     try:
@@ -25,8 +23,7 @@ def check_router_id(routerId):
     if (routerId > 64000 or routerId < 1):
         raise ValueError("RouterID must be between 1 and 64000")
     return routerId
-    
-    
+
 def check_input_ports(inputPorts):
     try:
         inputPorts = [int(port.strip()) for port in inputPorts.split(',')]
@@ -39,16 +36,47 @@ def check_input_ports(inputPorts):
         raise ValueError("Ports should be unique")
     return inputPorts
         
-
-def check_output_ports(outputPorts):
-    pass
-                        
-
-
+def check_output_ports(router, outputPorts):
+    outportPortList = []
+    try :
+        outputPorts = [port.strip() for port in outputPorts.split(',')]
+    except:
+        raise TypeError("Outport ports should be comma seperated in the form PORT-COST-ID")
+    for output in outputPorts:
+        config = {}
+        output = output.split('-')
+        output = [int(i) for i in output]
+        config["cost"] = output[1]
+        
+        if (output[0] > 64000 or output[0] < 1024):
+            raise ValueError("Port should be between 1024 and 64000")
+        if output[2] == router["routerId"]:
+            raise ValueError("Output port routerID matches own routerID")
+        if any(d.get('routerId', None) == output[2] for d in outportPortList):
+            raise ValueError("RouterID already exists in output list")        
+        config["routerId"] = output[2]
+        if output[0] in router["inputPorts"]:
+            raise ValueError("Outport port is shared with an input port")
+        if any(d.get('outputPort', None) == output[0] for d in outportPortList):
+            raise ValueError("OutputPort already in use")
+        config["outputPort"] = output[0]
+        outportPortList.append(config)
+    
+    return outportPortList
+                  
 def open_config_file(filePath):
     file = open(filePath, 'r')
     if file.mode == 'r':
-        read_config_file(file)
+        config = read_config_file(file)
     else:
         print("Error opening file")
-    return
+    return config
+    
+        
+if __name__ == "__main__":
+    current_directory = os.path.dirname(__file__)
+    parent_directory = os.path.split(current_directory)[0]
+    file_path = os.path.join(parent_directory, 'configs/good/01.conf')
+    print(open_config_file(file_path))
+    #file_path = os.path.join(parent_directory, 'configs/bad/01.conf')
+    #print(open_config_file(file_path))
