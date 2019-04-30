@@ -36,6 +36,14 @@ The configuration module deals with the loading of configuration data from disk,
 
 ## Tasks
 
+- [ ] Read in a configuration file and validate it
+- [ ] For each input port in the config file open a UDP socket binding to that port. NO sockets are created for outputs, these only refer to input ports of neighbors.
+
+- [ ] Build the initial routing table from the config output ports
+
+- [ ] Enter main loop.
+
+
 ### Configuration
 
 - [x] Create a struct for the configuration. A `typedef` for the struct should also be created. Some thought should be put into how to represent the input and output ports (array or linked list?).
