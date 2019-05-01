@@ -1,11 +1,15 @@
 import os
 from routing_table_entry import RoutingTableEntry
+import config
 
 
 class RoutingTable:
 
-    def __init__(self):
+    def __init__(self, config):
         self.__routes = []
+        self.routerID = config.router_id
+        for route in config.output_ports:
+            self.add_entry(route.router_id, route.port, route.cost)
 
     def add_entry(self, destination, nextHop, totalCost):
         route = RoutingTableEntry(destination, nextHop, totalCost)
@@ -58,20 +62,9 @@ class RoutingTable:
         return os.linesep.join(s)
 
 if __name__ == "__main__":
-    r = RoutingTable()
-    r.add_entry(1, 2, 3)
-    r.add_entry(4, 5, 6)
+    current_directory = os.path.dirname(__file__)
+    parent_directory = os.path.split(current_directory)[0]    
+    file_path = os.path.join(parent_directory, 'configs/good/01.conf')
+    config = config.open_config_file(file_path)    
+    r = RoutingTable(config)
     print(r)
-    #r.increment_age(1,1)
-    #r.set_garbage(1, True)
-    #r.increment_age(4,1)
-    #print(r)
-    #r.reset_age(1)
-    #print(r)
-    #print(r)
-    #r.delete_entry(4)
-    #print(r)
-    #r.set_cost(1,5)
-    #print(r)
-    #r.set_next_hop(1,7)
-    #print(r)

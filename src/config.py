@@ -128,6 +128,7 @@ if __name__ == "__main__":
     current_directory = os.path.dirname(__file__)
     parent_directory = os.path.split(current_directory)[0]
     file_path = os.path.join(parent_directory, 'configs/good/01.conf')
-    print(open_config_file(file_path))
-    #file_path = os.path.join(parent_directory, 'configs/bad/01.conf')
-    # print(open_config_file(file_path))
+    
+    config = open_config_file(file_path)
+    for route in config.output_ports:
+        print(route)   
