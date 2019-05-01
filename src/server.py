@@ -133,6 +133,7 @@ class Server:
                 # take the cost from the route plus the link cost
                 if total_cost < table_entry.cost:
                     self.rt.set_cost(table_entry.destination, total_cost)
+                    self.rt.set_garbage(table_entry.destination, False)
                     self.rt.set_next_hop(
                         table_entry.destination, route["next-hop"])
                     self.rt.reset_age(table_entry.destination)
