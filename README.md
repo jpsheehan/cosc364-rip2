@@ -23,7 +23,7 @@ The configuration module deals with the loading of configuration data from disk,
 - [X] Read in a configuration file and validate it
 - [X] For each input port in the config file, open a UDP socket binding to that port. NO sockets are created for outputs, these only refer to input ports of neighbors.
 
-- [ ] Build the initial routing table from the config output ports
+- [X] Build the initial routing table from the config output ports
 
 - [X] Enter main loop.
 
@@ -41,10 +41,5 @@ The configuration module deals with the loading of configuration data from disk,
 
 ### Configuration
 
-- [x] Create a struct for the configuration. A `typedef` for the struct should also be created. Some thought should be put into how to represent the input and output ports (array or linked list?).
-- [x] Create a struct to represent an output port. A `typedef` for the struct should also be created.
-- [ ] Create functions for parsing the configuration file. These should be split up into smaller functions so they can be easily tested in isolation.
-- [ ] Create a `config_load` function for reading the configuration from a file and returning a pointer to the configuration. If the configuration is invalid or could not be read, then this returns `NULL`.
-- [ ] Create a `config_save` function for writing the configuration to the specified file descriptor (this will likely be `stdout` for testing).
-- [ ] Create some configuration files for testing.
+- [X] Create some configuration files for testing.
 - [ ] Create some tests for the configuration file.
