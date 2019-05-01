@@ -22,18 +22,30 @@ import config
 
 
 def print_usage():
-    print("TODO: usage")
+    """
+        Prints the usage of the program.
+    """
+    print("usage: {0} <config_filename>".format(sys.argv[0]))
 
 
 def print_filename_error(filename):
-    print("TODO: filename error")
+    """
+        Prints a filename error.
+    """
+    print("Error: {0} doesn't exist.".format(filename))
 
 
-def print_config_error(err):
-    print("TODO: config error", err)
+def print_config_error():
+    """
+        Prints a configuration file error.
+    """
+    print("Error: Couldn't read the configuration file.")
 
 
 def main():
+    """
+        The main entry point to the program.
+    """
 
     if len(sys.argv) != 2:
         print_usage()
@@ -43,8 +55,11 @@ def main():
     file = None
     conf = None
 
+    # accepts config from stdin
     if filename == '--':
         file = sys.stdin
+    
+    # or from a file
     else:
         if not os.path.exists(filename):
             print_filename_error(filename)
@@ -57,11 +72,21 @@ def main():
         conf = config.Config()
         conf.parse_file(file)
         print("done!")
+        
+    except:
+        print_config_error()
+        return -1
 
+    try:
         print("Starting RIP router #" + str(conf.router_id))
         s = server.Server(conf)
         s.start()
 
+    # Ignore KeyboardInterrupts
+    except KeyboardInterrupt:
+        pass
+
+    # Re-raise other exceptions
     except Exception as err:
         raise err
 
