@@ -6,6 +6,7 @@ import timer
 import routing_table
 import protocol
 import utils
+import bencode
 
 
 # Creates a UDP IPv4 socket and binds it the host and port
@@ -52,6 +53,22 @@ class Server:
         """
         print("periodic update")
 
+        # send destination, next hop and total cost of each routing entry to each input port
+        sock = self.input_ports[0]
+
+        for outport in self.config.output_ports:
+            payload = []
+            for route in self.rt:
+                cost = route.cost
+                destination = route.destination
+                if destination == outport.router_id:
+                    cost = 16
+                payload.append({
+                    "destination": destination,
+                    "cost": cost
+                })
+            sock.sendto(protocol.encode(payload), ('localhost', outport.port))
+
     def process_incoming_data(self, addr, data):
         """
             Called when incoming data is received. The data returned from this function is sent back through the socket. If None is returned, nothing will be sent.
@@ -77,7 +94,7 @@ class Server:
         self.periodic_timer.start()
 
         # only block for half a second at a time
-        blocking_time = 2.0
+        blocking_time = 0.5
 
         for port in self.config.input_ports:
             print("listening on port", port)
@@ -94,7 +111,7 @@ class Server:
 
             self.periodic_timer.update()
 
-            self.print_display()
+            # self.print_display()
 
             self.rt.update(self.process_triggered_updates)
 
@@ -126,7 +143,6 @@ if __name__ == "__main__":
         12346,
         12347
     ]
-    c.periodic_update = 5
     c.output_ports = [
         config.OutputPort(22345, 1, 12),
         config.OutputPort(22346, 1, 13)
