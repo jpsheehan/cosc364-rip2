@@ -12,19 +12,22 @@ def decode(data):
 
 class Packet:
 
-    def __init__(self, link_cost = -1, routes = []):
+    def __init__(self, link_cost = -1, routes = [], triggered=0):
         self.link_cost = link_cost
         self.routes = routes
+        self.triggered = triggered
     
     def from_data(self, data):
         d = decode(data)
         self.link_cost = d["link-cost"]
         self.routes = d["routes"]
+        self.triggered = d["triggered"]
     
     def to_data(self):
         return encode({
             "link-cost": self.link_cost,
-            "routes": self.routes
+            "routes": self.routes,
+            "triggered": self.triggered
         })
 
     
