@@ -118,7 +118,10 @@ class Server:
 
         triggered_updates = []
         packet = protocol.Packet()
-        packet.from_data(data)
+        
+        if not packet.from_data(data):
+            self.log("invalid packet hash")
+            return
 
         if packet.triggered:
             self.log("got a triggered updates from " + str(packet.routes[0]["next-hop"]))
