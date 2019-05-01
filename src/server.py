@@ -105,12 +105,12 @@ class Server:
             next_hop_route = self.rt[route["next-hop"]]
             table_entry = self.rt[route["destination"]]
 
-            if self.config.router_id == 3 and route["destination"] == 4 or self.config.router_id == 4 and route["destination"] == 3:
-                self.log("link_cost: " + str(packet.link_cost))
-                self.log("route: " + str(route))
+            # if self.config.router_id == 3 and route["destination"] == 4 or self.config.router_id == 4 and route["destination"] == 3:
+            #     self.log("link_cost: " + str(packet.link_cost))
+            #     self.log("route: " + str(route))
 
             if next_hop_route is None:
-                total_cost = packet.link_cost
+                total_cost = route["cost"] + packet.link_cost
             else:
                 total_cost = route["cost"] + next_hop_route.cost
             
@@ -123,8 +123,9 @@ class Server:
                     # NEW ROUTE!
                     self.rt.add_entry(route["destination"],
                                       route["next-hop"], total_cost)
+                    self.log("new route for " + str(route["destination"]) + " found via " + str(route["next-hop"]) + " with a cost of " + str(total_cost))
                 else:
-                    pass
+                    self.log("new route for " + str(route["destination"]) + " via " + str(route["next-hop"]) + " is infinite")
 
             else:
                 # Known destinations
@@ -137,6 +138,7 @@ class Server:
                     self.rt.set_next_hop(
                         table_entry.destination, route["next-hop"])
                     self.rt.reset_age(table_entry.destination)
+                    self.log("cheaper route for " + str(route["destination"]) + " found via " + str(route["next-hop"]) + " with a cost of " + str(total_cost))
 
                 # if destination, next-hop is the same but infinite cost
                 # set the cost in table to infinite, set garbage
@@ -164,11 +166,20 @@ class Server:
     def process_triggered_updates(self, routes):
         sock = self.input_ports[0]
         for output_port in self.config.output_ports:
-            p = protocol.Packet(output_port.cost, [{
+
+            packet_routes = [{
                     "destination": route.destination,
                     "cost": 16,
                     "next-hop": self.config.router_id
-                } for route in routes])
+                } for route in routes]
+            
+            # packet_routes.append({
+            #         "destination": self.config.router_id,
+            #         "cost": 0,
+            #         "next-hop": self.config.router_id
+            #     })
+
+            p = protocol.Packet(output_port.cost, packet_routes)
             sock.sendto(p.to_data(), ('localhost', output_port.port))
 
     def start(self):
