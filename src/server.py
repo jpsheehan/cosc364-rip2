@@ -173,14 +173,7 @@ class Server:
                     "cost": 16,
                     "next-hop": self.config.router_id
                 } for route in routes])
-            # print(output_port.cost, routes)
             sock.sendto(p.to_data(), ('localhost', output_port.port))
-            
-        # print("Do triggered update for ", routes)
-        # print("triggered")
-        # print(routes)
-        # input()
-
 
     def start(self):
         """
@@ -197,7 +190,7 @@ class Server:
         self.periodic_timer.start()
 
         # only block for half a second at a time
-        blocking_time = 0.5
+        blocking_time = 0.1
 
         for port in self.config.input_ports:
             print("listening on port", port)

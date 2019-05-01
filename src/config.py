@@ -47,7 +47,7 @@ def read_config_file(file):
     routerId = (config.get('DEFAULT', 'router-id'))
     inputPorts = (config.get('DEFAULT', 'input-ports'))
     outputPorts = (config.get('DEFAULT', 'output-ports'))
-    periodicUpdate = config.get("DEFAULT", "periodic-update", fallback=1.0)
+    periodicUpdate = config.get("DEFAULT", "periodic-update", fallback=2.5)
 
     router["routerId"] = check_router_id(routerId)
     router["inputPorts"] = check_input_ports(inputPorts)
