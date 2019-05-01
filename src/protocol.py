@@ -15,16 +15,34 @@
 """
 
 import bencode
+import binascii
 
 __encoding = "utf-8"
 
 
 def encode(data):
-    return bencode.bencode(data).encode(__encoding)
+    """
+        Encodes the raw data, including a checksum.
+    """
+    body = bencode.bencode(data).encode(__encoding)
+    crc = binascii.crc32(body)
+    return crc.to_bytes(4, "big") + body
 
 
 def decode(data):
-    return bencode.bdecode(data.decode(__encoding))
+    """
+        Decodes raw data, checks the validity and returns the dictionary containing the data.
+        Returns None if the data is invalid.
+    """
+    try:
+        crc = int.from_bytes(data[:4], "big")
+        body = data[4:]
+        if crc != binascii.crc32(body):
+            return None
+        else:
+            return bencode.bdecode(body.decode(__encoding))
+    except:
+        return None
 
 class Packet:
 
@@ -35,9 +53,14 @@ class Packet:
     
     def from_data(self, data):
         d = decode(data)
-        self.link_cost = d["link-cost"]
-        self.routes = d["routes"]
-        self.triggered = d["triggered"]
+
+        if d is not None:
+            self.link_cost = d["link-cost"]
+            self.routes = d["routes"]
+            self.triggered = d["triggered"]
+            return True
+        else:
+            return False
     
     def to_data(self):
         return encode({
