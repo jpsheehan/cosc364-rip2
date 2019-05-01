@@ -1,79 +1,78 @@
 import socket
 import select
 
-# import timer
-from routing_table import RoutingTable
+import timer
+import routing_table
+import protocol
 
 
-# Creates a TCP IPv4 socket, binds it the host and port, and begins listening
+# Creates a UDP IPv4 socket and binds it the host and port
 def create_input_socket(port, host='localhost'):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((host, port))
-    print("Created socket for", host, port)
     return sock
 
 
-# Creates a TCP IPv4 socket and connects to the neighboring router
-def create_output_socket(output_data, host='localhost'):
-    port = output_data["port"]
-    router_id = output_data["router-id"]
-    link_cost = output_data["link-cost"]
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.connect((host, port))
-    return sock
+class Server:
 
+    def __init__(self, config):
+        """
+            Creates a new server with a configuration.
+        """
+        self.rt = routing_table.RoutingTable()
+        self.config = config
+        self.input_ports = []
+        self.periodic_timer = None
 
-# Handles the incoming data
-def handle_incoming_data(addr, data):
-    print("got:", data)
+    def process_periodic_update(self):
+        """
+            Called when the periodic timer is triggered.
+        """
+        print("periodic update")
 
+    def process_incoming_data(self, addr, data):
+        """
+            Called when incoming data is received. The data returned from this function is sent back through the socket. If None is returned, nothing will be sent.
+        """
+        print("recieved:", data)
+        return "thanks!"
 
-def handle_timer():
-    print("send update message to neighbours...")
+    def start(self):
+        """
+            Starts the server.
+        """
 
+        # set up the input ports
+        self.input_ports = list(
+            map(create_input_socket, self.config["input-ports"]))
 
-# Listens on all input ports for incoming RIP messages
-def server(config):
-    inputs = list(map(create_input_socket, config["input-ports"]))
-    outputs = []
+        # start the periodic timer
+        self.periodic_timer = timer.Timer(1, self.process_periodic_update)
+        self.periodic_timer.start()
 
-    def update_handler():
-        for output in config["output-ports"]:
-            outputs.append(create_output_socket(output))
-            # print("Sending update to port", output["port"])
+        # only block for half a second at a time
+        blocking_time = 0.5
 
-    # timer.init(config["periodic-timeout"], update_handler)
-    # timer.start()
+        while self.input_ports:
+            readable, _writable, exceptional = select.select(
+                self.input_ports, [], self.input_ports, blocking_time)
 
-    rt = RoutingTable()
+            self.periodic_timer.update()
 
-    while inputs:
-        readable, writable, exceptional = select.select(
-            inputs, outputs, inputs, 1)
+            # iterate through all sockets that have data waiting on them
+            for sock in readable:
+                data, addr = sock.recvfrom(4096)
+                resp = self.process_incoming_data(addr, protocol.decode(data))
 
-        # every second, we check for routes to invalidate in the routing table
-        if len(readable) == 0 and len(writable) == 0 and len(exceptional) == 0:
-            rt.invalidate()
+                if resp is not None:
+                    sock.sendto(protocol.encode(resp), addr)
 
-        for sock in readable:
-            # conn, addr = sock.accept()
-            data, addr = sock.recvfrom(4096)
-            handle_incoming_data(addr, data)
-            # conn.close()
-            print("connected good socket", addr)
-
-        # for sock in writable:
-        #     outputs.remove(sock)
-        #     sock.send("GET / HTTP/1.1\r\n\r\n".encode("utf-8"))
-        #     sock.recv(1024)
-        #     sock.close()
-
-        # removes a socket from the input list if it raised an error
-        for sock in exceptional:
-            print("connected bad socket")
-            if sock in inputs:
-                inputs.remove(sock)
-            sock.close()
+            # removes a socket from the input list if it raised an error
+            for sock in exceptional:
+                print("connected bad socket")
+                if sock in self.input_ports:
+                    self.input_ports.remove(sock)
+                sock.close()
 
 
 if __name__ == "__main__":
@@ -97,4 +96,5 @@ if __name__ == "__main__":
             }
         ]
     }
-    server(config)
+    s = Server(config)
+    s.start()
