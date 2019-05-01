@@ -49,7 +49,7 @@ The configuration module deals with the loading of configuration data from disk,
 
 - [ ] Periodically send routing table to socket for each input port. If any first hops in the table match the neighbor then change the metric to be infinite(16). This implements split horizon with poison reverse.
 
-- [ ] Periodically traverse routing table and update each age entry. If age is greater than timeout then set metric to infinite(16), reset the age and set garbage flag to TRUE.
+- [ ] Periodically traverse routing table and update each age entry. If age is greater than timeout then set metric to infinite(16), reset the age and set garbage flag to TRUE. If garbage flag is TRUE and age > 6*timeout, delete the entry.
 
 - [ ] Read from sockets. Update the routing table if a new destination or a known destination with better cost is recieved. Reset the age of all entries in the table that were recieved but unchanged (i.e same dest,nexthop and cost). For routes with the same dest, nexthop and infinite cost, reset age but set garbage flag to TRUE
 
