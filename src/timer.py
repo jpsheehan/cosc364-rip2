@@ -103,7 +103,10 @@ class Timer:
         return self.__paused and self.__started
 
     def __str__(self):
-        return "Timer <period={0}s, started={1}, paused={2}, elapsed={3}s>".format(self.__period, self.__started, self.__paused, self.getElapsed())
+        return "Timer <period={0:.3}s, started={1}, paused={2}, elapsed={3:.3}s>".format(self.__period, self.__started, self.__paused, self.getElapsed())
+
+    def __repr__(self):
+        return self.__str__()
 
 
 if __name__ == "__main__":
