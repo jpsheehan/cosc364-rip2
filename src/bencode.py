@@ -1,5 +1,18 @@
+#!/usr/bin/python3
+
 """
-A bencoding implementation based on the official specification (https://wiki.theory.org/index.php/BitTorrentSpecification#Bencoding)
+
+    generate_network.py
+
+    COSC364 RIP Assignment
+
+    Date: 02/05/2019
+
+    Written by:
+     - Will Cowper (81163265)
+     - Jesse Sheehan (53366509)
+
+    A bencoding implementation based on the official specification (https://wiki.theory.org/index.php/BitTorrentSpecification#Bencoding)
 
 """
 
