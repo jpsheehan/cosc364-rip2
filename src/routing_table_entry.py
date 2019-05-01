@@ -15,6 +15,9 @@
 """
 
 class RoutingTableEntry:
+        """
+        A RoutingTableEntry represents a RIP entry that resides in the routing table
+        """
 
     def __init__(self, destination, nextHop, cost):
         self.destination = destination
