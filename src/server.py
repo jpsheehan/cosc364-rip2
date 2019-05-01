@@ -1,32 +1,31 @@
 import socket
 import select
 
-import timer
+# import timer
 from routing_table import RoutingTable
 
+
 # Creates a TCP IPv4 socket, binds it the host and port, and begins listening
-
-
 def create_input_socket(port, host='localhost'):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((host, port))
-    sock.listen(5)
+    print("Created socket for", host, port)
     return sock
 
 
+# Creates a TCP IPv4 socket and connects to the neighboring router
 def create_output_socket(output_data, host='localhost'):
     port = output_data["port"]
     router_id = output_data["router-id"]
     link_cost = output_data["link-cost"]
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.connect((host, port))
     return sock
 
 
 # Handles the incoming data
-def handle_incoming_data(conn):
-    buffer = conn.recv(1024)
-    conn.send(buffer)
+def handle_incoming_data(addr, data):
+    print("got:", data)
 
 
 def handle_timer():
@@ -43,8 +42,8 @@ def server(config):
             outputs.append(create_output_socket(output))
             # print("Sending update to port", output["port"])
 
-    timer.init(config["periodic-timeout"], update_handler)
-    timer.start()
+    # timer.init(config["periodic-timeout"], update_handler)
+    # timer.start()
 
     rt = RoutingTable()
 
@@ -57,16 +56,17 @@ def server(config):
             rt.invalidate()
 
         for sock in readable:
-            conn, addr = sock.accept()
-            handle_incoming_data(conn)
-            conn.close()
+            # conn, addr = sock.accept()
+            data, addr = sock.recvfrom(4096)
+            handle_incoming_data(addr, data)
+            # conn.close()
             print("connected good socket", addr)
 
-        for sock in writable:
-            outputs.remove(sock)
-            sock.send("GET / HTTP/1.1\r\n\r\n".encode("utf-8"))
-            sock.recv(1024)
-            sock.close()
+        # for sock in writable:
+        #     outputs.remove(sock)
+        #     sock.send("GET / HTTP/1.1\r\n\r\n".encode("utf-8"))
+        #     sock.recv(1024)
+        #     sock.close()
 
         # removes a socket from the input list if it raised an error
         for sock in exceptional:
