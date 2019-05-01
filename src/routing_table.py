@@ -52,11 +52,11 @@ class RoutingTable:
         triggered_routes = []
 
         for route in self.__routes:
-            if route.age > 12 and not route.garbage:
+            if route.age > 10 and not route.garbage:
                 self.set_garbage(route.destination, True)
                 triggered_routes.append(route)
 
-            if route.age > 25 and route.garbage:
+            if route.age > 20 and route.garbage:
                 remove_routes.append(route)
 
         if len(triggered_routes) != 0:

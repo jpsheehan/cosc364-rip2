@@ -105,7 +105,7 @@ class Server:
         packet.from_data(data)
 
         if packet.triggered:
-            self.log("got a triggered updates from " + str(packet.routes[0]["destination"]))
+            self.log("got a triggered updates from " + str(packet.routes[0]["next-hop"]))
 
         # self.log("got packet from " + str(packet.routes[0]["next-hop"]) + " with " + str(len(packet.routes)) + " routes")
 
@@ -131,6 +131,7 @@ class Server:
             if route_destination == self.config.router_id:
                 continue
 
+
             if not is_destination_in_table and not is_destination_unreachable:
 
                 # put the destination in the table
@@ -140,6 +141,12 @@ class Server:
             elif is_destination_in_table:
 
                 is_destination_garbage = destination_entry.garbage
+
+                if packet.triggered and not is_destination_garbage:
+                    self.rt.set_garbage(route_destination, True)
+                    triggered_updates.append(destination_entry)
+                    self.log("marked " + str(route_destination) + " as garbage")
+
 
                 if total_destination_cost < destination_entry.cost:
 
