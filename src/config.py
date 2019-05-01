@@ -20,12 +20,24 @@ class Config:
         ]
         self.periodic_update = c["periodicUpdate"]
 
+    def __str__(self):
+        return "Config <id={0}, input_ports={1}, output_ports={2}, periodic_update={3}s>".format(self.router_id, self.input_ports, self.output_ports, self.periodic_update)
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class OutputPort:
     def __init__(self, port, cost, id):
         self.router_id = id
         self.port = port
         self.cost = cost
+
+    def __str__(self):
+        return "OutputPort <id={0}, port={1}, cost={2}>".format(self.router_id, self.port, self.cost)
+
+    def __repr__(self):
+        return self.__str__()
 
 
 def read_config_file(file):
