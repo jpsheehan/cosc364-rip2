@@ -47,7 +47,7 @@ def read_config_file(file):
     routerId = (config.get('DEFAULT', 'router-id'))
     inputPorts = (config.get('DEFAULT', 'input-ports'))
     outputPorts = (config.get('DEFAULT', 'output-ports'))
-    periodicUpdate = config.get("DEFAULT", "periodic-update", fallback=5)
+    periodicUpdate = config.get("DEFAULT", "periodic-update", fallback=1.0)
 
     router["routerId"] = check_router_id(routerId)
     router["inputPorts"] = check_input_ports(inputPorts)
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     current_directory = os.path.dirname(__file__)
     parent_directory = os.path.split(current_directory)[0]
     file_path = os.path.join(parent_directory, 'configs/good/01.conf')
-    
+
     config = open_config_file(file_path)
     for route in config.output_ports:
-        print(route)   
+        print(route)

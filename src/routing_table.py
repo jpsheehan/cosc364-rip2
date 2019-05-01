@@ -75,6 +75,9 @@ class RoutingTable:
             return self.__routes[index]
         return None
 
+    def __iter__(self):
+        return iter(self.__routes)
+
     def __str__(self):
         s = [
             "+------------+------------+------------+------------+------------+",
