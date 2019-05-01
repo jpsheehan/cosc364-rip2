@@ -56,6 +56,11 @@ class Timer:
             self.__pausedTime = 0
             self.__updateTime = 0
 
+    def reset(self):
+        if self.__started:
+            self.stop()
+            self.start()
+
     def pause(self):
         if self.__started and not self.__paused:
             self.__paused = True
