@@ -59,6 +59,9 @@ class Server:
         print("recieved:", data)
         return "thanks!"
 
+    def process_triggered_updates(self, routes):
+        print("Do triggered update for ", routes)
+
     def start(self):
         """
             Starts the server.
@@ -90,6 +93,8 @@ class Server:
             self.rt.increment_age(dt)
 
             self.periodic_timer.update()
+
+            self.rt.update(self.process_triggered_updates)
 
             self.print_display()
 

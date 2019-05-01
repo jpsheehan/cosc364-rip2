@@ -19,10 +19,12 @@ class RoutingTable:
         index = self.get_index(routerID)
         self.__routes[index].garbage = isGarbage
         self.reset_age(routerID)
+        if isGarbage:
+            self.set_cost(routerID, 16)
 
     def reset_age(self, routerID):
         index = self.get_index(routerID)
-        self.__routes[index].age = 0
+        self.__routes[index].age = 0.0
 
     def increment_age(self, time):
         for entry in self.__routes:
@@ -46,8 +48,26 @@ class RoutingTable:
         index = self.get_index(routerID)
         self.__routes[index].nextHop = nextHop
 
-    def invalidate(self):
-        pass
+    def update(self, triggered_update_callback):
+        remove_routes = []
+        triggered_routes = []
+
+        for route in self.__routes:
+            if route.age > 5 and not route.garbage:
+                self.set_garbage(route.destination, True)
+                triggered_routes.append(route)
+                # route.garbage = True
+                # route.cost = 16
+                # route.age = 0
+
+            if route.age > 10 and route.garbage:
+                remove_routes.append(route)
+
+        if len(triggered_routes) != 0:
+            triggered_update_callback(triggered_routes)
+
+        for route in remove_routes:
+            self.__routes.remove(route)
 
     def __str__(self):
         s = [
