@@ -51,9 +51,9 @@ The configuration module deals with the loading of configuration data from disk,
 
 - [ ] Periodically traverse routing table and update each age entry. If age is greater than timeout then set metric to infinite(16) and garbage flag to TRUE. If age is greater than 6*timeout AND garbage is TRUE then delete the entry.
 
-- [ ] Read from socket. Update the routing table if a new destination or a known destination with better cost is recieved.
+- [ ] Read from socket. Update the routing table if a new destination or a known destination with better cost is recieved. Reset the age of all entries in the table that were recieved.
 
-- [ ] Send triggered update only when routes become invald (i.e when router sets metric to 16)
+- [ ] Send triggered update only when routes become invald (i.e when router sets metric to 16 either through timeout)
 
 ### Configuration
 
