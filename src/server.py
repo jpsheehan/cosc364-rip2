@@ -77,7 +77,7 @@ class Server:
         self.periodic_timer.start()
 
         # only block for half a second at a time
-        blocking_time = 1.0
+        blocking_time = 2.0
 
         for port in self.config.input_ports:
             print("listening on port", port)
@@ -94,9 +94,9 @@ class Server:
 
             self.periodic_timer.update()
 
-            self.rt.update(self.process_triggered_updates)
-
             self.print_display()
+
+            self.rt.update(self.process_triggered_updates)
 
             # iterate through all sockets that have data waiting on them
             for sock in readable:
