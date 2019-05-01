@@ -21,6 +21,10 @@ import random
 
 class Config:
 
+    """
+        Config class used for abstracting the stored config
+    """
+
     def __init__(self):
         self.router_id = 0
         self.input_ports = []
@@ -58,8 +62,8 @@ class OutputPort:
 
 def read_config_file(file):
     """
-    Parses a given file and returns a dict containing the routerID, input ports
-    and output ports with their cost and next hop
+        Parses a given file and returns a dict containing the routerID, input ports
+        and output ports with their cost and next hop
     """
     #Create an instance of configparser object
     config = configparser.ConfigParser()
@@ -84,15 +88,15 @@ def read_config_file(file):
 
 def check_periodic_update(periodicUpdate):
     """
-    Reduces the chance of collisons and other nasties by implementing a random wait to the periodicUpdate
+        Reduces the chance of collisons and other nasties by implementing a random wait to the periodicUpdate
     """
     return periodicUpdate + (random.random() * 2 - 1)
 
 
 def check_router_id(routerId):
     """
-    Takes a routerID string from the config and checks it
-    Returns it back as an int if its valid
+        Takes a routerID string from the config and checks it
+        Returns it back as an int if its valid
     """
     try:
         routerId = int(routerId)
@@ -105,8 +109,8 @@ def check_router_id(routerId):
 
 def check_input_ports(inputPorts):
     """
-    Takes a string of inputports from the config
-    Validates and then returns them as a list
+        Takes a string of inputports from the config
+        Validates and then returns them as a list
     """
     try:
         inputPorts = [int(port.strip()) for port in inputPorts.split(',')]
@@ -123,9 +127,9 @@ def check_input_ports(inputPorts):
 def check_output_ports(router, outputPorts):
 
     """
-    Takes an incomplete router dict containing a routerID and input ports
-    Tests the routerID and input ports against a list of outputPorts
-    Returns a list of outputPorts if they are all valid.
+        Takes an incomplete router dict containing a routerID and input ports
+        Tests the routerID and input ports against a list of outputPorts
+        Returns a list of outputPorts if they are all valid.
 
     """
     outportPortList = []
@@ -158,7 +162,7 @@ def check_output_ports(router, outputPorts):
 
 def open_config_file(filePath):
     """
-    Takes a filepath as argument, validates it and returns a Config object
+        Takes a filepath as argument, validates it and returns a Config object
     """
     file = open(filePath, 'r')
     if file.mode == 'r':
