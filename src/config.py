@@ -9,13 +9,23 @@ class Config:
         self.router_id = 0
         self.input_ports = []
         self.output_ports = []
+        self.periodic_update = 0
 
     def parse_file(self, file):
         c = read_config_file(file)
         self.router_id = c["routerId"]
         self.input_ports = c["inputPorts"]
-        self.output_ports = c["outputPorts"]
+        self.output_ports = [
+            OutputPort(o["cost"], o["routerId"], o["outputPort"]) for o in c["outputPorts"]
+        ]
         self.periodic_update = c["periodicUpdate"]
+
+
+class OutputPort:
+    def __init__(self, port, cost, id):
+        self.router_id = id
+        self.port = port
+        self.cost = cost
 
 
 def read_config_file(file):
