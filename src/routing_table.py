@@ -68,6 +68,12 @@ class RoutingTable:
 
         for route in remove_routes:
             self.__routes.remove(route)
+    
+    def __getattr__(self, routerId):
+        index = self.get_index(routerId)
+        if index != -1:
+            return self.__routes[index]
+        return None
 
     def __str__(self):
         s = [
