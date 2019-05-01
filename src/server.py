@@ -92,10 +92,11 @@ class Server:
 
         for packet in data:
 
+            if packet["destination"] == self.config.router_id:
+                continue
+
             next_hop_route = self.rt[packet["next-hop"]]
             table_entry = self.rt[packet["destination"]]
-
-            print(packet)
 
             if next_hop_route is None:
                 # this should not happen unless a neighbor goes down and then comes back up
@@ -153,9 +154,8 @@ class Server:
                     print("  same next hop, finite cost")
 
                 else:
-                    print("  different next hop, larger cost")
-                    print(table_entry)
-                    print(packet)
+                    # input()
+                    pass
         
         if len(triggered_updates) > 0:
             self.process_triggered_updates(triggered_updates)
