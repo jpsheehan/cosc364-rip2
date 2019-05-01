@@ -41,6 +41,7 @@ class Server:
         print("RIP Router #" + str(self.config.router_id))
         print("Uptime: {0:.3} seconds".format(
             self.periodic_timer.getElapsed()))
+
         # print the routing table
         print(self.rt)
 
@@ -51,7 +52,7 @@ class Server:
         """
             Called when the periodic timer is triggered.
         """
-        print("periodic update")
+        # print("periodic update")
 
         # send destination, next hop and total cost of each routing entry to each input port
         sock = self.input_ports[0]
@@ -65,7 +66,8 @@ class Server:
                     cost = 16
                 payload.append({
                     "destination": destination,
-                    "cost": cost
+                    "cost": cost,
+                    "next-hop": self.config.router_id
                 })
             sock.sendto(protocol.encode(payload), ('localhost', outport.port))
 
@@ -73,8 +75,65 @@ class Server:
         """
             Called when incoming data is received. The data returned from this function is sent back through the socket. If None is returned, nothing will be sent.
         """
-        print("recieved:", data)
-        return "thanks!"
+
+        for packet in data:
+
+            next_hop_route = self.rt[packet["next-hop"]]
+            total_cost = packet["cost"] + next_hop_route.cost
+            table_entry = self.rt[packet["destination"]]
+
+            is_infinite = total_cost >= 16
+
+            # new destination with a non-infinite cost (<16) (add)
+            # take the cost from the packet plus the link cost
+            if table_entry is None:
+                print("New route!")
+                if not is_infinite:
+                    # NEW ROUTE!
+                    self.rt.add_entry(packet["destination"],
+                                      packet["next-hop"], total_cost)
+                    # print("New Route!")
+                    print("finite cost")
+                else:
+
+                    print(table_entry)
+                    print(packet)
+                    print("infinite cost")
+
+            else:
+                # Known destinations
+                print("Known route!")
+
+                # known destination but lower cost (update)
+                # take the cost from the packet plus the link cost
+                if total_cost < table_entry.cost:
+                    self.rt.set_cost(table_entry.destination, total_cost)
+                    self.rt.set_next_hop(
+                        table_entry.destination, packet["next-hop"])
+                    self.rt.reset_age(table_entry.destination)
+                    print("Smaller cost!")
+
+                # if destination, next-hop is the same but infinite cost
+                # set the cost in table to infinite, set garbage
+                elif is_infinite and table_entry.nextHop == packet["next-hop"]:
+                    self.rt.set_garbage(table_entry.destination, True)
+                    print("Infinite cost, same next hop")
+
+                # if destination, next-hop and non-infinite cost from packet is the same as table then reset age
+                elif table_entry.nextHop == packet["next-hop"]:
+                    self.rt.reset_age(table_entry.destination)
+                    print("same next hop, finite cost")
+
+                else:
+                    print("different next hop, larger cost")
+                    print(table_entry)
+                    print(packet)
+
+        # input()
+
+        # self.rt.reset_age(table_entry.destination)
+
+        return None
 
     def process_triggered_updates(self, routes):
         print("Do triggered update for ", routes)
@@ -109,9 +168,9 @@ class Server:
             dt = time.time() - loop_time
             self.rt.increment_age(dt)
 
-            self.periodic_timer.update()
+            self.print_display()
 
-            # self.print_display()
+            self.periodic_timer.update()
 
             self.rt.update(self.process_triggered_updates)
 

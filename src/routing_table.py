@@ -8,8 +8,9 @@ class RoutingTable:
     def __init__(self, config):
         self.__routes = []
         self.routerID = config.router_id
+        self.add_entry(self.routerID, self.routerID, 0)
         for route in config.output_ports:
-            self.add_entry(route.router_id, route.port, route.cost)
+            self.add_entry(route.router_id, route.router_id, route.cost)
 
     def add_entry(self, destination, nextHop, totalCost):
         route = RoutingTableEntry(destination, nextHop, totalCost)
@@ -28,7 +29,8 @@ class RoutingTable:
 
     def increment_age(self, time):
         for entry in self.__routes:
-            entry.age += time
+            if entry.destination != self.routerID:
+                entry.age += time
 
     def delete_entry(self, routerID):
         index = self.get_index(routerID)
@@ -68,8 +70,8 @@ class RoutingTable:
 
         for route in remove_routes:
             self.__routes.remove(route)
-    
-    def __getattr__(self, routerId):
+
+    def __getitem__(self, routerId):
         index = self.get_index(routerId)
         if index != -1:
             return self.__routes[index]

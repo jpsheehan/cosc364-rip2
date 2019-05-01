@@ -47,8 +47,7 @@ def main():
         s.start()
 
     except Exception as err:
-        print_config_error(err)
-        return -1
+        raise err
 
 
 if __name__ == "__main__":
