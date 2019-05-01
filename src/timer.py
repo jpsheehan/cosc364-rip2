@@ -1,5 +1,20 @@
-import time
+#!/usr/bin/python3
 
+"""
+
+    timer.py
+
+    COSC364 RIP Assignment
+
+    Date: 02/05/2019
+
+    Written by:
+     - Will Cowper (81163265)
+     - Jesse Sheehan (53366509)
+    
+"""
+
+import time
 
 class Timer:
 

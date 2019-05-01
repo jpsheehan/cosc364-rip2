@@ -1,3 +1,19 @@
+#!/usr/bin/python3
+
+"""
+
+    config.py
+
+    COSC364 RIP Assignment
+
+    Date: 02/05/2019
+
+    Written by:
+     - Will Cowper (81163265)
+     - Jesse Sheehan (53366509)
+    
+"""
+
 import configparser
 import os
 import random
