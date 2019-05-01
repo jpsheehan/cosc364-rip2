@@ -4,26 +4,10 @@ A routing daemon based on the RIP-2 specification.
 
 Written by Will Cowper (<wgc22@uclive.ac.nz>) and Jesse Sheehan (<jps111@uclive.ac.nz>).
 
-## Building
-
-All object files are compiled to the `./lib/` folder, and the program is compiled to `./bin/router`.
-
-To build the program, run
+To run the program, execute
 
 ```bash
-make
-```
-
-To run the program, run
-
-```bash
-make run
-```
-
-To clean the build tree, run
-
-```bash
-make clean
+python3 src config_filename.conf
 ```
 
 ## Modules
