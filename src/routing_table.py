@@ -9,8 +9,6 @@ class RoutingTable:
         self.__routes = []
         self.routerID = config.router_id
         self.add_entry(self.routerID, self.routerID, 0)
-        for route in config.output_ports:
-            self.add_entry(route.router_id, route.router_id, route.cost)
 
     def add_entry(self, destination, nextHop, totalCost):
         route = RoutingTableEntry(destination, nextHop, totalCost)
