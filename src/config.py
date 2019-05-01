@@ -57,14 +57,23 @@ class OutputPort:
 
 
 def read_config_file(file):
+    """
+    Parses a given file and returns a dict containing the routerID, input ports
+    and output ports with their cost and next hop
+    """
+    #Create an instance of configparser object
     config = configparser.ConfigParser()
     config.read_file(file)
+    # dict declartion
     router = {}
+    # Reading in each section of the config
     routerId = (config.get('DEFAULT', 'router-id'))
     inputPorts = (config.get('DEFAULT', 'input-ports'))
     outputPorts = (config.get('DEFAULT', 'output-ports'))
+    # Checks config file for periodic timer override or defaults to standard
     periodicUpdate = config.get("DEFAULT", "periodic-update", fallback=3.0)
 
+    # Validating all parameters
     router["routerId"] = check_router_id(routerId)
     router["inputPorts"] = check_input_ports(inputPorts)
     router["outputPorts"] = check_output_ports(router, outputPorts)
@@ -74,10 +83,17 @@ def read_config_file(file):
 
 
 def check_periodic_update(periodicUpdate):
+    """
+    Reduces the chance of collisons and other nasties by implementing a random wait to the periodicUpdate
+    """
     return periodicUpdate + (random.random() * 2 - 1)
 
 
 def check_router_id(routerId):
+    """
+    Takes a routerID string from the config and checks it
+    Returns it back as an int if its valid
+    """
     try:
         routerId = int(routerId)
     except:
@@ -88,6 +104,10 @@ def check_router_id(routerId):
 
 
 def check_input_ports(inputPorts):
+    """
+    Takes a string of inputports from the config
+    Validates and then returns them as a list
+    """
     try:
         inputPorts = [int(port.strip()) for port in inputPorts.split(',')]
     except:
@@ -101,6 +121,13 @@ def check_input_ports(inputPorts):
 
 
 def check_output_ports(router, outputPorts):
+
+    """
+    Takes an incomplete router dict containing a routerID and input ports
+    Tests the routerID and input ports against a list of outputPorts
+    Returns a list of outputPorts if they are all valid.
+
+    """
     outportPortList = []
     try:
         outputPorts = [port.strip() for port in outputPorts.split(',')]
@@ -129,8 +156,10 @@ def check_output_ports(router, outputPorts):
 
     return outportPortList
 
-
 def open_config_file(filePath):
+    """
+    Takes a filepath as argument, validates it and returns a Config object
+    """
     file = open(filePath, 'r')
     if file.mode == 'r':
         config = Config()
@@ -138,13 +167,3 @@ def open_config_file(filePath):
     else:
         print("Error opening file")
     return config
-
-
-if __name__ == "__main__":
-    current_directory = os.path.dirname(__file__)
-    parent_directory = os.path.split(current_directory)[0]
-    file_path = os.path.join(parent_directory, 'configs/good/01.conf')
-
-    config = open_config_file(file_path)
-    for route in config.output_ports:
-        print(route)
