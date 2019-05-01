@@ -125,7 +125,7 @@ class Server:
                                       route["next-hop"], total_cost)
                     self.log("new route for " + str(route["destination"]) + " found via " + str(route["next-hop"]) + " with a cost of " + str(total_cost))
                 else:
-                    self.log("new route for " + str(route["destination"]) + " via " + str(route["next-hop"]) + " is infinite")
+                    self.log("new route for " + str(route["destination"]) + " via " + str(route["next-hop"]) + " is infinite, ignoring")
 
             else:
                 # Known destinations
@@ -145,11 +145,13 @@ class Server:
                 elif is_infinite and table_entry.nextHop == route["next-hop"] and not table_entry.garbage:
                     self.rt.set_garbage(table_entry.destination, True)
                     triggered_updates.append(self.rt[table_entry.destination])
+                    self.log("router " + str(table_entry.destination) + " has been marked as garbage")
                 
                 elif is_infinite and table_entry.nextHop == route["next-hop"] and table_entry.garbage:
                     # comes back online!!!
                     self.rt.set_garbage(table_entry.nextHop, False)
                     self.rt.set_cost(table_entry.nextHop, packet.link_cost)
+                    self.log("router " + str(table_entry.destination) + " has come back online")
 
                 # if destination, next-hop and non-infinite cost from route is the same as table then reset age
                 elif table_entry.nextHop == route["next-hop"] and not is_infinite:
@@ -173,11 +175,11 @@ class Server:
                     "next-hop": self.config.router_id
                 } for route in routes]
             
-            # packet_routes.append({
-            #         "destination": self.config.router_id,
-            #         "cost": 0,
-            #         "next-hop": self.config.router_id
-            #     })
+            packet_routes.append({
+                    "destination": self.config.router_id,
+                    "cost": 0,
+                    "next-hop": self.config.router_id
+                })
 
             p = protocol.Packet(output_port.cost, packet_routes)
             sock.sendto(p.to_data(), ('localhost', output_port.port))
