@@ -4,6 +4,7 @@ import time
 
 import timer
 import routing_table
+import routing_table_entry
 import protocol
 import utils
 import bencode
@@ -59,16 +60,27 @@ class Server:
 
         for outport in self.config.output_ports:
             payload = []
+
             for route in self.rt:
+                
                 cost = route.cost
                 destination = route.destination
-                if destination == outport.router_id:
+
+                # if destination == outport.router_id:
+                #     cost = 16
+                
+                if self.rt[destination].nextHop == outport.router_id:
                     cost = 16
+                
+                if self.rt[destination].garbage:
+                    cost = 16
+
                 payload.append({
                     "destination": destination,
                     "cost": cost,
                     "next-hop": self.config.router_id
                 })
+
             sock.sendto(protocol.encode(payload), ('localhost', outport.port))
 
     def process_incoming_data(self, addr, data):
@@ -76,12 +88,27 @@ class Server:
             Called when incoming data is received. The data returned from this function is sent back through the socket. If None is returned, nothing will be sent.
         """
 
+        triggered_updates = []
+
         for packet in data:
 
             next_hop_route = self.rt[packet["next-hop"]]
-            total_cost = packet["cost"] + next_hop_route.cost
             table_entry = self.rt[packet["destination"]]
 
+            print(packet)
+
+            if next_hop_route is None:
+                # this should not happen unless a neighbor goes down and then comes back up
+                neighbor_router_id = packet["next-hop"]
+                
+                # get cost from config
+                total_cost = 16
+                for output_port in self.config.output_ports:
+                    if output_port.router_id == neighbor_router_id:
+                        total_cost = output_port.cost
+            else:
+                total_cost = packet["cost"] + next_hop_route.cost
+            
             is_infinite = total_cost >= 16
 
             # new destination with a non-infinite cost (<16) (add)
@@ -93,12 +120,12 @@ class Server:
                     self.rt.add_entry(packet["destination"],
                                       packet["next-hop"], total_cost)
                     # print("New Route!")
-                    print("finite cost")
+                    print("  finite cost")
                 else:
 
                     print(table_entry)
                     print(packet)
-                    print("infinite cost")
+                    print("  infinite cost")
 
             else:
                 # Known destinations
@@ -111,32 +138,36 @@ class Server:
                     self.rt.set_next_hop(
                         table_entry.destination, packet["next-hop"])
                     self.rt.reset_age(table_entry.destination)
-                    print("Smaller cost!")
+                    print("  Smaller cost!")
 
                 # if destination, next-hop is the same but infinite cost
                 # set the cost in table to infinite, set garbage
-                elif is_infinite and table_entry.nextHop == packet["next-hop"]:
+                elif is_infinite and table_entry.nextHop == packet["next-hop"] and not table_entry.garbage:
                     self.rt.set_garbage(table_entry.destination, True)
-                    print("Infinite cost, same next hop")
+                    print("  Infinite cost, same next hop")
+                    triggered_updates.append(self.rt[table_entry.destination])
 
                 # if destination, next-hop and non-infinite cost from packet is the same as table then reset age
-                elif table_entry.nextHop == packet["next-hop"]:
+                elif table_entry.nextHop == packet["next-hop"] and not is_infinite:
                     self.rt.reset_age(table_entry.destination)
-                    print("same next hop, finite cost")
+                    print("  same next hop, finite cost")
 
                 else:
-                    print("different next hop, larger cost")
+                    print("  different next hop, larger cost")
                     print(table_entry)
                     print(packet)
-
-        # input()
-
-        # self.rt.reset_age(table_entry.destination)
+        
+        if len(triggered_updates) > 0:
+            self.process_triggered_updates(triggered_updates)
 
         return None
 
     def process_triggered_updates(self, routes):
-        print("Do triggered update for ", routes)
+        # print("Do triggered update for ", routes)
+        print("triggered")
+        print(routes)
+        # input()
+
 
     def start(self):
         """
