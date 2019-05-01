@@ -69,6 +69,9 @@ class RoutingTable:
         for route in remove_routes:
             self.__routes.remove(route)
 
+    def __iter__(self):
+        return iter(self.__routes)
+
     def __str__(self):
         s = [
             "+------------+------------+------------+------------+------------+",
