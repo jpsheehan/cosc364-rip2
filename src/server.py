@@ -26,10 +26,10 @@ import utils
 import bencode
 
 
-# Creates a UDP IPv4 socket and binds it the host and port
-
-
 def create_input_socket(port, host='localhost'):
+    """
+        Creates a new UDP socket.
+    """
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((host, port))
     return sock
@@ -107,6 +107,9 @@ class Server:
             sock.sendto(packet.to_data(), ('localhost', output_port.port))
     
     def log(self, message):
+        """
+            Writes to the information log (for a maximum of 10 lines).
+        """
         self.loglines.append(message)
         while len(self.loglines) > 10:
             self.loglines = self.loglines[1:]
@@ -125,8 +128,6 @@ class Server:
 
         if packet.triggered:
             self.log("got a triggered updates from " + str(packet.routes[0]["next-hop"]))
-
-        # self.log("got packet from " + str(packet.routes[0]["next-hop"]) + " with " + str(len(packet.routes)) + " routes")
 
         for route in packet.routes:
 
@@ -176,18 +177,8 @@ class Server:
                     self.rt.set_garbage(route_destination, False)
                     self.rt.set_next_hop(route_destination, route_next_hop)
                     self.log("found new route to " + str(route_destination) + " via " + str(route_next_hop) + " with a cost of " + str(total_destination_cost))
-                    
-                    # else:
-                    #     pass
                 
                 elif route_next_hop == destination_entry.nextHop:
-                    
-                    # if is_destination_unreachable and packet.triggered:
-                    #     # mark as garbage
-                    #     # trigger update
-                    #     self.rt.set_garbage(route_destination, True)
-                    #     triggered_updates.append(destination_entry)
-                    #     self.log("marked " + str(route_destination) + " as garbage 1")
 
                     if not is_destination_unreachable and not is_destination_garbage:
                         # keep alive
@@ -199,114 +190,6 @@ class Server:
                         self.rt.set_garbage(route_destination, True)
                         triggered_updates.append(destination_entry)
                         self.log("marked " + str(route_destination) + " as garbage")
-                    
-                    
-                        
-                
-                # else:
-                #     # hop is different and the cost is worse or equal
-                #     pass
-
-                
-            
-            # if not is_next_hop_in_table and not is_next_hop_unreachable:
-            #     # put the next hop in the table
-            #     # self.rt.add_entry()
-            #     pass
-            
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            # if route["destination"] == self.config.router_id:
-            #     # if route["next-hop"] == self.config.router_id:
-            #     #     continue
-            #     # self.log("swapped " + str(route["destination"]) + " and " + str(route["next-hop"]))
-            #     # route["destination"] = route["next-hop"]
-            #     # route["cost"] = 0
-            #     continue
-
-            # next_hop_entry = self.rt[route["next-hop"]]
-            # destination_entry = self.rt[route["destination"]]
-
-            # if next_hop_entry is None:
-            #     total_cost = route["cost"] + packet.link_cost
-            # else:
-            #     total_cost = route["cost"] + next_hop_entry.cost
-            
-            # is_infinite = total_cost >= 16
-            # if total_cost > 16:
-            #     total_cost = 16
-
-            # # new destination with a non-infinite cost (<16) (add)
-            # # take the cost from the route plus the link cost
-            # if destination_entry is None:
-            #     if not is_infinite:
-            #         # NEW ROUTE!
-            #         self.rt.add_entry(route["destination"],
-            #                           route["next-hop"], total_cost)
-            #         self.log("new route for " + str(route["destination"]) + " found via " + str(route["next-hop"]) + " with a cost of " + str(total_cost))
-            #     else:
-            #         # self.log("new route for " + str(route["destination"]) + " via " + str(route["next-hop"]) + " is infinite, ignoring")
-            #         self.log("dropped packet for new router " + str(route["destination"]))
-
-            # else:
-            #     # Known destinations
-
-            #     # known destination but lower cost (update)
-            #     # take the cost from the route plus the link cost
-            #     if total_cost < destination_entry.cost:
-            #         self.rt.set_cost(destination_entry.destination, total_cost)
-            #         self.rt.set_garbage(destination_entry.destination, False)
-            #         self.rt.set_next_hop(
-            #             destination_entry.destination, route["next-hop"])
-            #         self.rt.reset_age(destination_entry.destination)
-            #         self.log("cheaper route for " + str(route["destination"]) + " found via " + str(route["next-hop"]) + " with a cost of " + str(total_cost))
-
-            #     # if destination, next-hop is the same but infinite cost
-            #     # set the cost in table to infinite, set garbage
-            #     elif is_infinite and destination_entry.nextHop == route["next-hop"] and not destination_entry.garbage:
-            #         self.rt.set_garbage(destination_entry.destination, True)
-            #         triggered_updates.append(self.rt[destination_entry.destination])
-            #         self.log("router " + str(destination_entry.destination) + " has been marked as garbage")
-                
-            #     elif is_infinite and destination_entry.nextHop == route["next-hop"] and destination_entry.garbage:
-            #         # comes back online!!!
-            #         self.rt.set_garbage(destination_entry.nextHop, False)
-            #         self.rt.set_cost(destination_entry.nextHop, total_cost)
-            #         self.log("HERE 1")
-            #         # self.log("router " + str(destination_entry.destination) + " has come back online")
-
-            #     # if destination, next-hop and non-infinite cost from route is the same as table then reset age
-            #     elif destination_entry.nextHop == route["next-hop"] and not is_infinite:
-            #         if total_cost == destination_entry.cost:
-            #             pass
-            #         self.rt.reset_age(destination_entry.destination)
-
-            #     else:
-            #         if is_infinite:
-            #             self.log("infinite here ")
-            #         else:
-            #             self.log("finite here " + str(total_cost) + " >= " + str(destination_entry.cost))
         
         if len(triggered_updates) > 0:
             self.process_triggered_updates(triggered_updates)
@@ -314,6 +197,9 @@ class Server:
         return None
 
     def process_triggered_updates(self, routes):
+        """
+            Processes the triggered updates.
+        """
         sock = self.input_ports[0]
         for output_port in self.config.output_ports:
 
@@ -322,12 +208,6 @@ class Server:
                     "cost": 16,
                     "next-hop": route.nextHop
                 } for route in routes]
-            
-            # packet_routes.append({
-            #         "destination": self.config.router_id,
-            #         "cost": 0,
-            #         "next-hop": self.config.router_id
-            #     })
 
             self.log("sending triggered updates to " + str(output_port.router_id))
             p = protocol.Packet(output_port.cost, packet_routes, 1)
@@ -361,12 +241,16 @@ class Server:
             dt = time.time() - loop_time
             self.rt.increment_age(dt)
 
+            # redisplay the screen
             self.print_display()
 
+            # update the timer, may call process_periodic_update
             self.periodic_timer.update()
 
+            # may call process_triggered_updates
             self.rt.update(self.process_triggered_updates)
 
+            # display the information log
             print("")
             print("Information Log:")
             for line in self.loglines:
@@ -382,15 +266,15 @@ class Server:
 
             # removes a socket from the input list if it raised an error
             for sock in exceptional:
-                raise Exception("SOMETHOING BAD HAPPENED")
-                print("connected bad socket")
                 if sock in self.input_ports:
                     self.input_ports.remove(sock)
-                sock.close()
-
+                    sock.close()
+                raise Exception("A socket raised an error")
+            
+            # update the loop time
             loop_time = time.time()
 
-
+# some tests:
 if __name__ == "__main__":
     import config
 
