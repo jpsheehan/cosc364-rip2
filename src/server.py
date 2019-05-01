@@ -1,10 +1,12 @@
 import socket
 import select
+import time
 
 import timer
 import routing_table
 import protocol
 import utils
+
 
 # Creates a UDP IPv4 socket and binds it the host and port
 
@@ -44,7 +46,7 @@ class Server:
         # print other info
         print("Press Ctrl+C to quit")
 
-    def process_periodic_update(self):
+    def process_periodic_update(self, dt):
         """
             Called when the periodic timer is triggered.
         """
@@ -77,9 +79,15 @@ class Server:
         for port in self.config.input_ports:
             print("listening on port", port)
 
+        loop_time = time.time()
+
         while self.input_ports:
             readable, _writable, exceptional = select.select(
                 self.input_ports, [], self.input_ports, blocking_time)
+
+            # increment the age
+            dt = time.time() - loop_time
+            self.rt.increment_age(dt)
 
             self.periodic_timer.update()
 
@@ -99,6 +107,8 @@ class Server:
                 if sock in self.input_ports:
                     self.input_ports.remove(sock)
                 sock.close()
+
+            loop_time = time.time()
 
 
 if __name__ == "__main__":

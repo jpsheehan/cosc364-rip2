@@ -49,9 +49,10 @@ class Timer:
     def update(self):
         if self.__started and not self.__paused:
             t = time.time()
-            if t - self.__updateTime > self.__period:
+            dt = t - self.__updateTime
+            if dt > self.__period:
                 self.__updateTime = t
-                self.__callback()
+                self.__callback(dt)
 
     def getElapsed(self):
         if self.__started:
