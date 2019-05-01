@@ -16,7 +16,7 @@ class Config:
         self.router_id = c["routerId"]
         self.input_ports = c["inputPorts"]
         self.output_ports = [
-            OutputPort(o["cost"], o["routerId"], o["outputPort"]) for o in c["outputPorts"]
+            OutputPort(o["outputPort"], o["cost"], o["routerId"]) for o in c["outputPorts"]
         ]
         self.periodic_update = c["periodicUpdate"]
 
