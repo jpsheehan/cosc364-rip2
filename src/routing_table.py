@@ -7,7 +7,8 @@ class RoutingTable:
     def __init__(self):
         self.__routes = []
 
-    def add_entry(self, route):
+    def add_entry(self, destination, nextHop, totalCost):
+        route = RoutingTableEntry(destination, nextHop, totalCost)
         self.__routes.append(route)
         
     def set_garbage(self, routerID, isGarbage):
@@ -56,24 +57,21 @@ class RoutingTable:
         s.append("+------------+------------+------------+------------+------------+")
         return os.linesep.join(s)
 
-
 if __name__ == "__main__":
     r = RoutingTable()
-    e1 = RoutingTableEntry(1, 2, 3)
-    e2 = RoutingTableEntry(4, 5, 6)
-    
-    r.add_entry(e1)
-    r.add_entry(e2)
-    r.increment_age(1,1)
-    r.set_garbage(1, True)
-    r.increment_age(4,1)
+    r.add_entry(1, 2, 3)
+    r.add_entry(4, 5, 6)
     print(r)
+    #r.increment_age(1,1)
+    #r.set_garbage(1, True)
+    #r.increment_age(4,1)
+    #print(r)
     #r.reset_age(1)
-    print(r)
-    print(r)
-    r.delete_entry(4)
-    print(r)
-    r.set_cost(1,5)
-    print(r)
-    r.set_next_hop(1,7)
-    print(r)
+    #print(r)
+    #print(r)
+    #r.delete_entry(4)
+    #print(r)
+    #r.set_cost(1,5)
+    #print(r)
+    #r.set_next_hop(1,7)
+    #print(r)
