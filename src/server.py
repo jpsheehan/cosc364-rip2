@@ -57,7 +57,7 @@ class Server:
         # send destination, next hop and total cost of each routing entry to each input port
         sock = self.input_ports[0]
 
-        for outport in self.config.output_ports:
+        for output_port in self.config.output_ports:
 
             # add self to the routes
             routes = [{
@@ -65,13 +65,17 @@ class Server:
                     "cost": 0,
                     "next-hop": self.config.router_id
                 }]
+            
+            if len(self.rt) == 0:
+                self.log("advertising self to " + str(output_port.router_id))
 
             for route in self.rt:
                 
                 cost = route.cost
                 destination = route.destination
                 
-                if self.rt[destination].nextHop == outport.router_id:
+                # poison reverse
+                if self.rt[destination].nextHop == output_port.router_id and destination != output_port.router_id:
                     cost = 16
 
                 routes.append({
@@ -80,8 +84,8 @@ class Server:
                     "next-hop": self.config.router_id
                 })
 
-            packet = protocol.Packet(outport.cost, routes)
-            sock.sendto(packet.to_data(), ('localhost', outport.port))
+            packet = protocol.Packet(output_port.cost, routes)
+            sock.sendto(packet.to_data(), ('localhost', output_port.port))
     
     def log(self, message):
         self.loglines.append(message)
@@ -97,17 +101,18 @@ class Server:
         packet = protocol.Packet()
         packet.from_data(data)
 
+        self.log("got packet from " + str(packet.routes[0]["next-hop"]) + " with " + str(len(packet.routes)) + " routes")
+
         for route in packet.routes:
 
             if route["destination"] == self.config.router_id:
-                continue
+                self.log("swapped " + str(route["destination"]) + " and " + str(route["next-hop"]))
+                route["destination"] = route["next-hop"]
+                route["cost"] = 0
+                # continue
 
             next_hop_route = self.rt[route["next-hop"]]
             table_entry = self.rt[route["destination"]]
-
-            # if self.config.router_id == 3 and route["destination"] == 4 or self.config.router_id == 4 and route["destination"] == 3:
-            #     self.log("link_cost: " + str(packet.link_cost))
-            #     self.log("route: " + str(route))
 
             if next_hop_route is None:
                 total_cost = route["cost"] + packet.link_cost
@@ -125,7 +130,8 @@ class Server:
                                       route["next-hop"], total_cost)
                     self.log("new route for " + str(route["destination"]) + " found via " + str(route["next-hop"]) + " with a cost of " + str(total_cost))
                 else:
-                    self.log("new route for " + str(route["destination"]) + " via " + str(route["next-hop"]) + " is infinite, ignoring")
+                    # self.log("new route for " + str(route["destination"]) + " via " + str(route["next-hop"]) + " is infinite, ignoring")
+                    self.log("dropped packet for new router " + str(route["destination"]))
 
             else:
                 # Known destinations
@@ -150,15 +156,19 @@ class Server:
                 elif is_infinite and table_entry.nextHop == route["next-hop"] and table_entry.garbage:
                     # comes back online!!!
                     self.rt.set_garbage(table_entry.nextHop, False)
-                    self.rt.set_cost(table_entry.nextHop, packet.link_cost)
-                    self.log("router " + str(table_entry.destination) + " has come back online")
+                    self.rt.set_cost(table_entry.nextHop, total_cost)
+                    self.log("HERE 1")
+                    # self.log("router " + str(table_entry.destination) + " has come back online")
 
                 # if destination, next-hop and non-infinite cost from route is the same as table then reset age
                 elif table_entry.nextHop == route["next-hop"] and not is_infinite:
                     self.rt.reset_age(table_entry.destination)
 
                 else:
-                    pass
+                    if is_infinite:
+                        self.log("infinite here ")
+                    else:
+                        self.log("finite here " + str(total_cost) + " >= " + str(table_entry.cost))
         
         if len(triggered_updates) > 0:
             self.process_triggered_updates(triggered_updates)
@@ -172,7 +182,7 @@ class Server:
             packet_routes = [{
                     "destination": route.destination,
                     "cost": 16,
-                    "next-hop": self.config.router_id
+                    "next-hop": route.nextHop
                 } for route in routes]
             
             packet_routes.append({
@@ -197,6 +207,7 @@ class Server:
         self.periodic_timer = timer.Timer(
             self.config.periodic_update, self.process_periodic_update)
         self.periodic_timer.start()
+        self.periodic_timer.trigger()
 
         # only block for half a second at a time
         blocking_time = 0.1
@@ -232,6 +243,7 @@ class Server:
 
             # removes a socket from the input list if it raised an error
             for sock in exceptional:
+                raise Exception("SOMETHOING BAD HAPPENED")
                 print("connected bad socket")
                 if sock in self.input_ports:
                     self.input_ports.remove(sock)
