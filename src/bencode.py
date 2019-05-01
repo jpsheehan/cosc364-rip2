@@ -52,7 +52,8 @@ def bencode(value):
         # TODO: check that the key is a string
         return "d" + "".join([bencode(k) + bencode(v) for k, v in value.items()]) + "e"
 
-    raise ValueError(type(value) + " must be one of int, str, list or dict")
+    raise ValueError(str(type(value)) +
+                     " must be one of int, str, list or dict")
 
 
 def bdecode(string, returnLength=False):
