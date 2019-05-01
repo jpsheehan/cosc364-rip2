@@ -107,7 +107,7 @@ def main():
             f.write("; " + filename + "\n")
             f.write("; created with tools/generate_network.py\n")
             f.write("\n")
-            f.write("[DEFAULT]")
+            f.write("[DEFAULT]\n")
             f.write("router-id " + str(config["router-id"]) + "\n")
             f.write("input-ports " + ", ".join([str(x)
                                                 for x in config["input-ports"]]) + "\n")
