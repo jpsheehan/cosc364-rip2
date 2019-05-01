@@ -35,23 +35,40 @@ def decode(data):
         Returns None if the data is invalid.
     """
     try:
+        # get the CRC32 code
         crc = int.from_bytes(data[:4], "big")
+
+        # get the body
         body = data[4:]
+
+        # return None if the checksum is incorrect
         if crc != binascii.crc32(body):
             return None
+
+        # return the decoded data if the checksum is correct
         else:
             return bencode.bdecode(body.decode(__encoding))
     except:
         return None
 
 class Packet:
+    """
+        A Packet is used to send and receive updates from other RIP routers.
+    """
 
     def __init__(self, link_cost = -1, routes = [], triggered=0):
+        """
+            Creates a new Packet.
+        """
         self.link_cost = link_cost
         self.routes = routes
         self.triggered = triggered
     
     def from_data(self, data):
+        """
+            Sets the packet information from some raw data.
+            Returns True if successful.
+        """
         d = decode(data)
 
         if d is not None:
@@ -63,6 +80,9 @@ class Packet:
             return False
     
     def to_data(self):
+        """
+            Returns the raw data to be sent.
+        """
         return encode({
             "link-cost": self.link_cost,
             "routes": self.routes,
