@@ -117,7 +117,8 @@ def check_output_ports(router, outputPorts):
 def open_config_file(filePath):
     file = open(filePath, 'r')
     if file.mode == 'r':
-        config = read_config_file(file)
+        config = Config()
+        config.parse_file(file)
     else:
         print("Error opening file")
     return config
