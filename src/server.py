@@ -29,6 +29,7 @@ class Server:
         self.config = config
         self.input_ports = []
         self.periodic_timer = None
+        self.loglines = []
 
     def print_display(self):
         """
@@ -81,6 +82,11 @@ class Server:
 
             packet = protocol.Packet(outport.cost, routes)
             sock.sendto(packet.to_data(), ('localhost', outport.port))
+    
+    def log(self, message):
+        self.loglines.append(message)
+        while len(self.loglines) > 10:
+            self.loglines = self.loglines[1:]
 
     def process_incoming_data(self, addr, data):
         """
@@ -99,15 +105,11 @@ class Server:
             next_hop_route = self.rt[route["next-hop"]]
             table_entry = self.rt[route["destination"]]
 
+            if self.config.router_id == 3 and route["destination"] == 4 or self.config.router_id == 4 and route["destination"] == 3:
+                self.log("link_cost: " + str(packet.link_cost))
+                self.log("route: " + str(route))
+
             if next_hop_route is None:
-                # # this should not happen unless a neighbor goes down and then comes back up
-                # neighbor_router_id = route["next-hop"]
-                
-                # # get cost from config
-                # total_cost = 16
-                # for output_port in self.config.output_ports:
-                #     if output_port.router_id == neighbor_router_id:
-                #         total_cost = output_port.cost
                 total_cost = packet.link_cost
             else:
                 total_cost = route["cost"] + next_hop_route.cost
@@ -117,22 +119,15 @@ class Server:
             # new destination with a non-infinite cost (<16) (add)
             # take the cost from the route plus the link cost
             if table_entry is None:
-                print("New route!")
                 if not is_infinite:
                     # NEW ROUTE!
                     self.rt.add_entry(route["destination"],
                                       route["next-hop"], total_cost)
-                    # print("New Route!")
-                    print("  finite cost")
                 else:
-
-                    print(table_entry)
-                    print(route)
-                    print("  infinite cost")
+                    pass
 
             else:
                 # Known destinations
-                print("Known route!")
 
                 # known destination but lower cost (update)
                 # take the cost from the route plus the link cost
@@ -142,28 +137,23 @@ class Server:
                     self.rt.set_next_hop(
                         table_entry.destination, route["next-hop"])
                     self.rt.reset_age(table_entry.destination)
-                    print("  Smaller cost!")
 
                 # if destination, next-hop is the same but infinite cost
                 # set the cost in table to infinite, set garbage
                 elif is_infinite and table_entry.nextHop == route["next-hop"] and not table_entry.garbage:
                     self.rt.set_garbage(table_entry.destination, True)
-                    print("  Infinite cost, same next hop, not garbage")
                     triggered_updates.append(self.rt[table_entry.destination])
                 
                 elif is_infinite and table_entry.nextHop == route["next-hop"] and table_entry.garbage:
                     # comes back online!!!
                     self.rt.set_garbage(table_entry.nextHop, False)
                     self.rt.set_cost(table_entry.nextHop, packet.link_cost)
-                    print("  Infinite cost, same next hop, garbage")
 
                 # if destination, next-hop and non-infinite cost from route is the same as table then reset age
                 elif table_entry.nextHop == route["next-hop"] and not is_infinite:
                     self.rt.reset_age(table_entry.destination)
-                    print("  same next hop, finite cost")
 
                 else:
-                    # input()
                     pass
         
         if len(triggered_updates) > 0:
@@ -198,9 +188,6 @@ class Server:
         # only block for half a second at a time
         blocking_time = 0.1
 
-        for port in self.config.input_ports:
-            print("listening on port", port)
-
         loop_time = time.time()
 
         while self.input_ports:
@@ -216,6 +203,11 @@ class Server:
             self.periodic_timer.update()
 
             self.rt.update(self.process_triggered_updates)
+
+            print("")
+            print("Information Log:")
+            for line in self.loglines:
+                print(" ", line)
 
             # iterate through all sockets that have data waiting on them
             for sock in readable:
