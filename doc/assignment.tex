@@ -119,18 +119,25 @@ As required, the following questions have been answered:
 The contribution toward the entire project was an even split. Both partners felt as though the work they had contributed was worth 50\% each.
 
 \subsection{Reflection}
+
 % Which aspects of your overall program do you consider to be particularly well done?
+Some of the smaller modules in our codebase have been implemented quite well. For example, the Timer and Bencode modules have a very focused purpose and were discrete enough to be able to be doctested. We found that making use of recursion in the Bencode module prevented the complexity of its functions from becoming too high. The Timer modlue has many more features that what are being used in our project. It turned out to be too fully-featured and we could have done just as well with a stripped-back version of the same thing. We also had a good user-interface that clearly displays the current routing table. Our protocol module contains functions and classes that deal with preparing data for transmission, this includes a checksum that ensures that the data arrives intact or not at all.
 
 
 % Which aspects of your overall program could be improved?
+The overall system design could be improved. We rewrote some modules several times in order to get it to feel as though it would be easy to work with. If we were to improve upon the curent design, we could add more features, such as accepting keyboard commands while the router is running, etc.
 
 \subsection{Event Processing}
 % How have you ensured the atomicity of event processing?
-In order to ensure that atomicity of events in our program we have made use of queues and ...
+Our entire program is based around a main loop that waits for incoming packets and if it doesn't receive any, it will do other things, such as updating the timers, updating the routing table, rendering the screen, etc. We use lists to ensure that our incoming packets are serviced in the order in which they arrive. When packets are processed, they may trigger updates to the routers neighbors. These updates are serviced after the periodic updates have finished being received. Once these updates have been sent to its neighbors, the router simply waits for more information to arrive.
+
+By waiting for events, and servicing other processes when there are no events, we can make use of the router's time more efficiently.
 
 
 \subsection{Testing}
-How have we tested the program?
+Many of the smaller functions in the project were discrete enough that we could use doctests on them although we found that as the project grew, the complex dependencies between the objects also grew. Once many functions in a module were working well and passing doctests, we were also able to test the module as a whole, by using many functions together and testing them. This led to us discovering that some of our functions weren't returning the correct values or weren't accepting the right parameters, etc. After getting an entire module working properly, we focussed on combining several modules together in a new module and testing that. Because of the amount of things we needed to test we didn't bother with writing any test cases. This was perhaps a poor decision in terms of testing.
+
+Eventually we had most of the program working and had to create test configuration files for the router program to use. We found this process to be very tedious and so, wrote a program to generate these files for us. Our testing became much easier after this as we didn't have to manually write these configuration files.
 
 \newpage
 \section{Appendices}
