@@ -4,9 +4,11 @@ import select
 import timer
 import routing_table
 import protocol
-
+import utils
 
 # Creates a UDP IPv4 socket and binds it the host and port
+
+
 def create_input_socket(port, host='localhost'):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((host, port))
@@ -52,7 +54,7 @@ class Server:
         self.periodic_timer.start()
 
         # only block for half a second at a time
-        blocking_time = 0.5
+        blocking_time = 1.0
 
         for port in self.config.input_ports:
             print("listening on port", port)
@@ -62,6 +64,10 @@ class Server:
                 self.input_ports, [], self.input_ports, blocking_time)
 
             self.periodic_timer.update()
+
+            utils.clear_terminal()
+            print(self.rt)
+            print("Press Ctrl+C to quit")
 
             # iterate through all sockets that have data waiting on them
             for sock in readable:
@@ -80,25 +86,20 @@ class Server:
 
 
 if __name__ == "__main__":
-    config = {
-        "input-ports": [
-            12345,
-            12346,
-            12347
-        ],
-        "periodic-timeout": 5,
-        "output-ports": [
-            {
-                "port": 22345,
-                "router-id": 12,
-                "link-cost": 1
-            },
-            {
-                "port": 22346,
-                "router-id": 13,
-                "link-cost": 1
-            }
-        ]
-    }
-    s = Server(config)
+    import config
+
+    c = config.Config()
+    c.router_id = 11
+    c.input_ports = [
+        12345,
+        12346,
+        12347
+    ]
+    c.periodic_update = 5
+    c.output_ports = [
+        config.OutputPort(22345, 1, 12),
+        config.OutputPort(22346, 1, 13)
+    ]
+
+    s = Server(c)
     s.start()
