@@ -54,3 +54,8 @@ dkms.conf
 __pycache__/
 
 /.vscode/
+
+/doc/assignment.aux
+/doc/assignment.log
+/doc/assignment.pdf
+/doc/assignment.synctex.gz

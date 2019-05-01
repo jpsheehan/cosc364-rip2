@@ -1,0 +1,107 @@
+% !TEX TS-program = pdflatex
+% !TEX encoding = UTF-8 Unicode
+
+% This is a simple template for a LaTeX document using the "article" class.
+% See "book", "report", "letter" for other types of document.
+
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+
+%%% Examples of Article customizations
+% These packages are optional, depending whether you want the features they provide.
+% See the LaTeX Companion or other references for full information.
+
+%%% PAGE DIMENSIONS
+\usepackage{geometry} % to change the page dimensions
+\geometry{a4paper} % or letterpaper (US) or a5paper or....
+% \geometry{margin=2in} % for example, change the margins to 2 inches all round
+% \geometry{landscape} % set up the page for landscape
+%   read geometry.pdf for detailed page layout information
+
+\usepackage{graphicx} % support the \includegraphics command and options
+
+% \usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+
+%%% PACKAGES
+\usepackage{booktabs} % for much better looking tables
+\usepackage{array} % for better arrays (eg matrices) in maths
+\usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
+\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
+\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+% These packages are all incorporated in the memoir class to one degree or another...
+\usepackage{pdfpages}
+\usepackage{amsmath,mathtools,amsfonts}
+\usepackage{bm}
+
+%%% HEADERS & FOOTERS
+\usepackage{fancyhdr} % This should be set AFTER setting up the page geometry
+\pagestyle{fancy} % options: empty , plain , fancy
+\renewcommand{\headrulewidth}{1pt} % customise the layout...
+\lhead{Jesse Sheehan (53366509)}\chead{}\rhead{Will Cowper (81163265)}
+\lfoot{}\cfoot{\thepage}\rfoot{}
+
+%%% SECTION TITLE APPEARANCE
+%\usepackage{sectsty}
+%\allsectionsfont{\sffamily\mdseries\upshape} % (See the fntguide.pdf for font help)
+% (This matches ConTeXt defaults)
+
+%%% END Article customizations
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother
+
+\newenvironment{sysmatrix}[1]
+ {\left(\begin{array}{@{}#1@{}}}
+ {\end{array}\right)}
+\newcommand{\ro}[1]{%
+  \xrightarrow{\mathmakebox[\rowidth]{#1}}%
+}
+\newlength{\rowidth}% row operation width
+\AtBeginDocument{\setlength{\rowidth}{3em}}
+
+\title{COSC364 RIPv2 Assignment}
+\date{\today}
+\author{Jesse Sheehan (53366509)\\ Will Cowper (81163265)}
+
+\begin{document}
+
+\maketitle
+
+\section{Questions}
+
+As required, the following questions have been answered:
+
+\subsection{Contribution}
+The contribution toward the entire project was an even split. Both partners felt as though the work they had contributed was worth 50\% each.
+
+\subsection{Reflection}
+% Which aspects of your overall program do you consider to be particularly well done?
+
+
+% Which aspects of your overall program could be improved?
+
+\subsection{Event Processing}
+% How have you ensured the atomicity of event processing?
+In order to ensure that atomicity of events in our program we have made use of queues and ...
+
+
+\subsection{Testing}
+How have we tested the program?
+
+\section{Appendices}
+
+\subsection{Source Code}
+
+\subsection{Configuration Files}
+
+\subsection{Plagiarism Declaration}
+
+\includepdf[pages=1]{includes/plagiarism.pdf}
+
+\subsection{Other Files}
+
+\end{document}
