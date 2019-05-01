@@ -19,7 +19,7 @@ class Server:
         """
             Creates a new server with a configuration.
         """
-        self.rt = routing_table.RoutingTable()
+        self.rt = routing_table.RoutingTable(config)
         self.config = config
         self.input_ports = []
         self.periodic_timer = None
