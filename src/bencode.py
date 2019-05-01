@@ -1,3 +1,8 @@
+"""
+A bencoding implementation based on the official specification (https://wiki.theory.org/index.php/BitTorrentSpecification#Bencoding)
+
+"""
+
 
 def bencode(value):
     """
