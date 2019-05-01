@@ -21,7 +21,7 @@ class Config:
         self.periodic_update = c["periodicUpdate"]
 
     def __str__(self):
-        return "Config <id={0}, input_ports={1}, output_ports={2}, periodic_update={3}s>".format(self.router_id, self.input_ports, self.output_ports, self.periodic_update)
+        return "Config <id={0}, input_ports={1}, output_ports={2}, periodic_update={3:.3}s>".format(self.router_id, self.input_ports, self.output_ports, self.periodic_update)
 
     def __repr__(self):
         return self.__str__()
