@@ -40,8 +40,8 @@ class Server:
 
         # print info about this router
         print("RIP Router #" + str(self.config.router_id))
-        print("Uptime: {0:.3} seconds".format(
-            self.periodic_timer.getElapsed()))
+        print("Uptime: {0} seconds".format(
+            round(self.periodic_timer.getElapsed())))
 
         # print the routing table
         print(self.rt)
@@ -146,15 +146,10 @@ class Server:
                     triggered_updates.append(self.rt[table_entry.destination])
                 
                 elif is_infinite and table_entry.nextHop == route["next-hop"] and table_entry.garbage:
-                    print("route =", route)
-                    print("table_entry =", table_entry)
-                    print("next_hop_route =", next_hop_route)
-                    print("link_cost =", packet.link_cost)
                     # comes back online!!!
-                    # self.rt.set_garbage(table_entry.destination, False)
-                    # self.rt.set_cost(table_entry.destination, packet.link_cost)
-                    # print("  Infinite cost, same next hop, garbage")
-                    pass
+                    self.rt.set_garbage(table_entry.nextHop, False)
+                    self.rt.set_cost(table_entry.nextHop, packet.link_cost)
+                    print("  Infinite cost, same next hop, garbage")
 
                 # if destination, next-hop and non-infinite cost from route is the same as table then reset age
                 elif table_entry.nextHop == route["next-hop"] and not is_infinite:
@@ -171,9 +166,19 @@ class Server:
         return None
 
     def process_triggered_updates(self, routes):
+        sock = self.input_ports[0]
+        for output_port in self.config.output_ports:
+            p = protocol.Packet(output_port.cost, [{
+                    "destination": route.destination,
+                    "cost": 16,
+                    "next-hop": self.config.router_id
+                } for route in routes])
+            # print(output_port.cost, routes)
+            sock.sendto(p.to_data(), ('localhost', output_port.port))
+            
         # print("Do triggered update for ", routes)
-        print("triggered")
-        print(routes)
+        # print("triggered")
+        # print(routes)
         # input()
 
 
