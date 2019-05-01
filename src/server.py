@@ -96,15 +96,21 @@ class Server:
             next_hop_route = self.rt[packet["next-hop"]]
             table_entry = self.rt[packet["destination"]]
 
+            link_cost = 16
+            for output_port in self.config.output_ports:
+                if output_port.router_id == packet["next-hop"]:
+                    link_cost = output_port.cost
+
             if next_hop_route is None:
-                # this should not happen unless a neighbor goes down and then comes back up
-                neighbor_router_id = packet["next-hop"]
+                # # this should not happen unless a neighbor goes down and then comes back up
+                # neighbor_router_id = packet["next-hop"]
                 
-                # get cost from config
-                total_cost = 16
-                for output_port in self.config.output_ports:
-                    if output_port.router_id == neighbor_router_id:
-                        total_cost = output_port.cost
+                # # get cost from config
+                # total_cost = 16
+                # for output_port in self.config.output_ports:
+                #     if output_port.router_id == neighbor_router_id:
+                #         total_cost = output_port.cost
+                total_cost = link_cost
             else:
                 total_cost = packet["cost"] + next_hop_route.cost
             
@@ -143,8 +149,19 @@ class Server:
                 # set the cost in table to infinite, set garbage
                 elif is_infinite and table_entry.nextHop == packet["next-hop"] and not table_entry.garbage:
                     self.rt.set_garbage(table_entry.destination, True)
-                    print("  Infinite cost, same next hop")
+                    print("  Infinite cost, same next hop, not garbage")
                     triggered_updates.append(self.rt[table_entry.destination])
+                
+                elif is_infinite and table_entry.nextHop == packet["next-hop"] and table_entry.garbage:
+                    print("packet =", packet)
+                    print("table_entry =", table_entry)
+                    print("next_hop_route =", next_hop_route)
+                    print("link_cost =", link_cost)
+                    # comes back online!!!
+                    # self.rt.set_garbage(table_entry.destination, False)
+                    # self.rt.set_cost(table_entry.destination, link_cost)
+                    # print("  Infinite cost, same next hop, garbage")
+                    pass
 
                 # if destination, next-hop and non-infinite cost from packet is the same as table then reset age
                 elif table_entry.nextHop == packet["next-hop"] and not is_infinite:
