@@ -3,9 +3,9 @@ import bencode
 __encoding = "utf-8"
 
 
-def encode_routes(routes):
-    return bencode.bencode(routes).encode(__encoding)
+def encode(data):
+    return bencode.bencode(data).encode(__encoding)
 
 
-def decode_routes(data):
+def decode(data):
     return bencode.bdecode(data.decode(__encoding))
