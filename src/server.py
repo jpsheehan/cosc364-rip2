@@ -26,6 +26,24 @@ class Server:
         self.input_ports = []
         self.periodic_timer = None
 
+    def print_display(self):
+        """
+            Displays useful information for the user.
+        """
+
+        # clear the screen
+        utils.clear_terminal()
+
+        # print info about this router
+        print("RIP Router #" + str(self.config.router_id))
+        print("Uptime: {0:.3} seconds".format(
+            self.periodic_timer.getElapsed()))
+        # print the routing table
+        print(self.rt)
+
+        # print other info
+        print("Press Ctrl+C to quit")
+
     def process_periodic_update(self):
         """
             Called when the periodic timer is triggered.
@@ -65,9 +83,7 @@ class Server:
 
             self.periodic_timer.update()
 
-            utils.clear_terminal()
-            print(self.rt)
-            print("Press Ctrl+C to quit")
+            self.print_display()
 
             # iterate through all sockets that have data waiting on them
             for sock in readable:
