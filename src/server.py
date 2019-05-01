@@ -58,7 +58,12 @@ class Server:
 
         for outport in self.config.output_ports:
 
-            routes = []
+            # add self to the routes
+            routes = [{
+                    "destination": self.config.router_id,
+                    "cost": 0,
+                    "next-hop": self.config.router_id
+                }]
 
             for route in self.rt:
                 

@@ -8,7 +8,6 @@ class RoutingTable:
     def __init__(self, config):
         self.__routes = []
         self.routerID = config.router_id
-        self.add_entry(self.routerID, self.routerID, 0)
 
     def add_entry(self, destination, nextHop, totalCost):
         route = RoutingTableEntry(destination, nextHop, totalCost)
@@ -81,7 +80,7 @@ class RoutingTable:
             "| Dest.      | Next Hop   | Total Cost | Age        | Garbage?   |",
             "+------------+------------+------------+------------+------------+"
         ]
-        for route in self.__routes[1:]:
+        for route in self.__routes:
             s.append("| {0:<10} | {1:<10} | {2:<10} | {3:<10} | {4:<10} |".format(
                 route.destination, route.nextHop, route.cost, round(route.age, 2), route.garbage))
         s.append("+------------+------------+------------+------------+------------+")
