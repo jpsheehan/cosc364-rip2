@@ -86,9 +86,9 @@ class RoutingTable:
             "| Dest.      | Next Hop   | Total Cost | Age        | Garbage?   |",
             "+------------+------------+------------+------------+------------+"
         ]
-        for route in self.__routes:
-            s.append("| {0:<10} | {1:<10} | {2:<10} | {3:<10.4} | {4:<10} |".format(
-                route.destination, route.nextHop, route.cost, route.age, route.garbage))
+        for route in self.__routes[1:]:
+            s.append("| {0:<10} | {1:<10} | {2:<10} | {3:<10} | {4:<10} |".format(
+                route.destination, route.nextHop, route.cost, round(route.age, 2), route.garbage))
         s.append("+------------+------------+------------+------------+------------+")
         return os.linesep.join(s)
 
