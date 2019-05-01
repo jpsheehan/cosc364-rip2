@@ -1,4 +1,5 @@
 import os
+from routing_table_entry import RoutingTableEntry
 
 
 class RoutingTable:
@@ -8,7 +9,38 @@ class RoutingTable:
 
     def add_entry(self, route):
         self.__routes.append(route)
-
+        
+    def set_garbage(self, routerID, isGarbage):
+        index = self.get_index(routerID)
+        self.__routes[index].garbage = isGarbage
+        self.reset_age(routerID)
+                
+    def reset_age(self, routerID):
+        index = self.get_index(routerID)
+        self.__routes[index].age = 0
+                
+    def increment_age(self, routerID, time):
+        index = self.get_index(routerID)
+        self.__routes[index].age += time
+        
+    def delete_entry(self, routerID):
+        index = self.get_index(routerID)
+        del self.__routes[index]
+                
+    def get_index(self, routerID):
+        for i, route in enumerate(self.__routes):
+            if route.destination == routerID:
+                return i
+        return -1  # Not found
+    
+    def set_cost(self, routerID, cost):
+        index = self.get_index(routerID)
+        self.__routes[index].cost = cost
+        
+    def set_next_hop(self, routerID, nextHop):
+        index = self.get_index(routerID)
+        self.__routes[index].nextHop = nextHop    
+        
     def invalidate(self):
         pass
 
@@ -20,18 +52,28 @@ class RoutingTable:
         ]
         for route in self.__routes:
             s.append("| {0:<10} | {1:<10} | {2:<10} | {3:<10} | {4:<10} |".format(
-                route["router_id"], route["next_hop"], route["cost"], route["age"], route["garbage"]))
+                route.destination, route.nextHop, route.cost, route.age, route.garbage))
         s.append("+------------+------------+------------+------------+------------+")
         return os.linesep.join(s)
 
 
 if __name__ == "__main__":
     r = RoutingTable()
-    r.add_entry({
-        "router_id": "A",
-        "next_hop": "B",
-        "cost": 7,
-        "age": 30,
-        "garbage": False
-    })
+    e1 = RoutingTableEntry(1, 2, 3)
+    e2 = RoutingTableEntry(4, 5, 6)
+    
+    r.add_entry(e1)
+    r.add_entry(e2)
+    r.increment_age(1,1)
+    r.set_garbage(1, True)
+    r.increment_age(4,1)
+    print(r)
+    #r.reset_age(1)
+    print(r)
+    print(r)
+    r.delete_entry(4)
+    print(r)
+    r.set_cost(1,5)
+    print(r)
+    r.set_next_hop(1,7)
     print(r)
