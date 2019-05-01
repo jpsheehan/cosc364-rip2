@@ -75,7 +75,10 @@ class Server:
                 destination = route.destination
                 
                 # poison reverse
-                if self.rt[destination].nextHop == output_port.router_id and destination != output_port.router_id:
+                if self.rt[destination].nextHop == output_port.router_id: # and destination != output_port.router_id:
+                    cost = 16
+                
+                if self.rt[destination].garbage:
                     cost = 16
 
                 routes.append({
@@ -101,74 +104,165 @@ class Server:
         packet = protocol.Packet()
         packet.from_data(data)
 
-        self.log("got packet from " + str(packet.routes[0]["next-hop"]) + " with " + str(len(packet.routes)) + " routes")
+        # self.log("got packet from " + str(packet.routes[0]["next-hop"]) + " with " + str(len(packet.routes)) + " routes")
 
         for route in packet.routes:
 
-            if route["destination"] == self.config.router_id:
-                self.log("swapped " + str(route["destination"]) + " and " + str(route["next-hop"]))
-                route["destination"] = route["next-hop"]
-                route["cost"] = 0
-                # continue
+            route_destination = route["destination"]
+            route_cost = route["cost"]
+            route_next_hop = route["next-hop"]
 
-            next_hop_route = self.rt[route["next-hop"]]
-            table_entry = self.rt[route["destination"]]
+            destination_entry = self.rt[route_destination]
+            # next_hop_entry = self.rt[route_next_hop]
 
-            if next_hop_route is None:
-                total_cost = route["cost"] + packet.link_cost
-            else:
-                total_cost = route["cost"] + next_hop_route.cost
+            is_destination_in_table = destination_entry is not None
+            # is_next_hop_in_table = next_hop_entry is not None
             
-            is_infinite = total_cost >= 16
+            is_destination_unreachable = route_cost >= 16
+            # is_next_hop_unreachable = packet.link_cost >= 16
 
-            # new destination with a non-infinite cost (<16) (add)
-            # take the cost from the route plus the link cost
-            if table_entry is None:
-                if not is_infinite:
-                    # NEW ROUTE!
-                    self.rt.add_entry(route["destination"],
-                                      route["next-hop"], total_cost)
-                    self.log("new route for " + str(route["destination"]) + " found via " + str(route["next-hop"]) + " with a cost of " + str(total_cost))
-                else:
-                    # self.log("new route for " + str(route["destination"]) + " via " + str(route["next-hop"]) + " is infinite, ignoring")
-                    self.log("dropped packet for new router " + str(route["destination"]))
+            # is_destination_a_neighbor = route_next_hop == route_destination
 
-            else:
-                # Known destinations
+            total_destination_cost = route_cost + packet.link_cost
 
-                # known destination but lower cost (update)
-                # take the cost from the route plus the link cost
-                if total_cost < table_entry.cost:
-                    self.rt.set_cost(table_entry.destination, total_cost)
-                    self.rt.set_garbage(table_entry.destination, False)
-                    self.rt.set_next_hop(
-                        table_entry.destination, route["next-hop"])
-                    self.rt.reset_age(table_entry.destination)
-                    self.log("cheaper route for " + str(route["destination"]) + " found via " + str(route["next-hop"]) + " with a cost of " + str(total_cost))
+            if route_destination == self.config.router_id:
+                continue
 
-                # if destination, next-hop is the same but infinite cost
-                # set the cost in table to infinite, set garbage
-                elif is_infinite and table_entry.nextHop == route["next-hop"] and not table_entry.garbage:
-                    self.rt.set_garbage(table_entry.destination, True)
-                    triggered_updates.append(self.rt[table_entry.destination])
-                    self.log("router " + str(table_entry.destination) + " has been marked as garbage")
+            if not is_destination_in_table and not is_destination_unreachable:
+
+                # put the destination in the table
+                self.rt.add_entry(route_destination, route_next_hop, total_destination_cost)
+                self.log("added new router " + str(route_destination) + " via " + str(route_next_hop) + " with a cost of " + str(total_destination_cost))
+            
+            elif is_destination_in_table:
+
+                is_destination_garbage = destination_entry.garbage
+
+                if total_destination_cost < destination_entry.cost:
+                    # update the cost and the hop in the table
+                    self.rt.set_cost(route_destination, total_destination_cost)
+                    self.rt.set_garbage(route_destination, False)
+                    self.rt.set_next_hop(route_destination, route_next_hop)
+                    self.log("found new route to " + str(route_destination) + " via " + str(route_next_hop) + " with a cost of " + str(total_destination_cost))
                 
-                elif is_infinite and table_entry.nextHop == route["next-hop"] and table_entry.garbage:
-                    # comes back online!!!
-                    self.rt.set_garbage(table_entry.nextHop, False)
-                    self.rt.set_cost(table_entry.nextHop, total_cost)
-                    self.log("HERE 1")
-                    # self.log("router " + str(table_entry.destination) + " has come back online")
+                elif route_next_hop == destination_entry.nextHop:
 
-                # if destination, next-hop and non-infinite cost from route is the same as table then reset age
-                elif table_entry.nextHop == route["next-hop"] and not is_infinite:
-                    self.rt.reset_age(table_entry.destination)
+                    if not is_destination_unreachable:
+                        # keep alive
+                        self.rt.reset_age(route_destination)
 
-                else:
-                    if is_infinite:
-                        self.log("infinite here ")
-                    else:
-                        self.log("finite here " + str(total_cost) + " >= " + str(table_entry.cost))
+                    elif not is_destination_garbage:
+                        # mark as garbage
+                        # trigger update
+                        self.rt.set_garbage(route_destination, True)
+                        triggered_updates.append(destination_entry)
+                        self.log("marked " + str(route_destination) + " as garbage")
+                        
+                
+                # else:
+                #     # hop is different and the cost is worse or equal
+                #     pass
+
+                
+            
+            # if not is_next_hop_in_table and not is_next_hop_unreachable:
+            #     # put the next hop in the table
+            #     # self.rt.add_entry()
+            #     pass
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            # if route["destination"] == self.config.router_id:
+            #     # if route["next-hop"] == self.config.router_id:
+            #     #     continue
+            #     # self.log("swapped " + str(route["destination"]) + " and " + str(route["next-hop"]))
+            #     # route["destination"] = route["next-hop"]
+            #     # route["cost"] = 0
+            #     continue
+
+            # next_hop_entry = self.rt[route["next-hop"]]
+            # destination_entry = self.rt[route["destination"]]
+
+            # if next_hop_entry is None:
+            #     total_cost = route["cost"] + packet.link_cost
+            # else:
+            #     total_cost = route["cost"] + next_hop_entry.cost
+            
+            # is_infinite = total_cost >= 16
+            # if total_cost > 16:
+            #     total_cost = 16
+
+            # # new destination with a non-infinite cost (<16) (add)
+            # # take the cost from the route plus the link cost
+            # if destination_entry is None:
+            #     if not is_infinite:
+            #         # NEW ROUTE!
+            #         self.rt.add_entry(route["destination"],
+            #                           route["next-hop"], total_cost)
+            #         self.log("new route for " + str(route["destination"]) + " found via " + str(route["next-hop"]) + " with a cost of " + str(total_cost))
+            #     else:
+            #         # self.log("new route for " + str(route["destination"]) + " via " + str(route["next-hop"]) + " is infinite, ignoring")
+            #         self.log("dropped packet for new router " + str(route["destination"]))
+
+            # else:
+            #     # Known destinations
+
+            #     # known destination but lower cost (update)
+            #     # take the cost from the route plus the link cost
+            #     if total_cost < destination_entry.cost:
+            #         self.rt.set_cost(destination_entry.destination, total_cost)
+            #         self.rt.set_garbage(destination_entry.destination, False)
+            #         self.rt.set_next_hop(
+            #             destination_entry.destination, route["next-hop"])
+            #         self.rt.reset_age(destination_entry.destination)
+            #         self.log("cheaper route for " + str(route["destination"]) + " found via " + str(route["next-hop"]) + " with a cost of " + str(total_cost))
+
+            #     # if destination, next-hop is the same but infinite cost
+            #     # set the cost in table to infinite, set garbage
+            #     elif is_infinite and destination_entry.nextHop == route["next-hop"] and not destination_entry.garbage:
+            #         self.rt.set_garbage(destination_entry.destination, True)
+            #         triggered_updates.append(self.rt[destination_entry.destination])
+            #         self.log("router " + str(destination_entry.destination) + " has been marked as garbage")
+                
+            #     elif is_infinite and destination_entry.nextHop == route["next-hop"] and destination_entry.garbage:
+            #         # comes back online!!!
+            #         self.rt.set_garbage(destination_entry.nextHop, False)
+            #         self.rt.set_cost(destination_entry.nextHop, total_cost)
+            #         self.log("HERE 1")
+            #         # self.log("router " + str(destination_entry.destination) + " has come back online")
+
+            #     # if destination, next-hop and non-infinite cost from route is the same as table then reset age
+            #     elif destination_entry.nextHop == route["next-hop"] and not is_infinite:
+            #         if total_cost == destination_entry.cost:
+            #             pass
+            #         self.rt.reset_age(destination_entry.destination)
+
+            #     else:
+            #         if is_infinite:
+            #             self.log("infinite here ")
+            #         else:
+            #             self.log("finite here " + str(total_cost) + " >= " + str(destination_entry.cost))
         
         if len(triggered_updates) > 0:
             self.process_triggered_updates(triggered_updates)
