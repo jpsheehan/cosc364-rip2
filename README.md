@@ -36,16 +36,16 @@ The configuration module deals with the loading of configuration data from disk,
 
 ## Tasks - Setup
 
-- [ ] Read in a configuration file and validate it
-- [ ] For each input port in the config file, open a UDP socket binding to that port. NO sockets are created for outputs, these only refer to input ports of neighbors.
+- [X] Read in a configuration file and validate it
+- [X] For each input port in the config file, open a UDP socket binding to that port. NO sockets are created for outputs, these only refer to input ports of neighbors.
 
 - [ ] Build the initial routing table from the config output ports
 
-- [ ] Enter main loop.
+- [X] Enter main loop.
 
 ## Tasks - Main Loop
 
-- [ ] Print routing table to console
+- [X] Print routing table to console
 
 - [ ] Periodically send routing table to socket for each input port. If any first hops in the table match the neighbor then change the metric to be infinite(16). This implements split horizon with poison reverse.
 
