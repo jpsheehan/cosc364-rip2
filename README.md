@@ -34,7 +34,7 @@ A module is just a single part of the overall program. It would be useful to bre
 
 The configuration module deals with the loading of configuration data from disk, and validating the contents of the data. All functions in this module should begin with `config_`.
 
-## Tasks
+## Tasks - Setup
 
 - [ ] Read in a configuration file and validate it
 - [ ] For each input port in the config file, open a UDP socket binding to that port. NO sockets are created for outputs, these only refer to input ports of neighbors.
@@ -43,7 +43,7 @@ The configuration module deals with the loading of configuration data from disk,
 
 - [ ] Enter main loop.
 
-## Main Loop
+## Tasks - Main Loop
 
 - [ ] Print routing table to console
 
