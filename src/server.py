@@ -53,8 +53,6 @@ class Server:
         """
             Called when the periodic timer is triggered.
         """
-        # print("periodic update")
-
         # send destination, next hop and total cost of each routing entry to each input port
         sock = self.input_ports[0]
 
