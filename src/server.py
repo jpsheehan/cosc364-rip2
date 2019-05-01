@@ -44,14 +44,18 @@ class Server:
 
         # set up the input ports
         self.input_ports = list(
-            map(create_input_socket, self.config["input-ports"]))
+            map(create_input_socket, self.config.input_ports))
 
         # start the periodic timer
-        self.periodic_timer = timer.Timer(1, self.process_periodic_update)
+        self.periodic_timer = timer.Timer(
+            self.config.periodic_update, self.process_periodic_update)
         self.periodic_timer.start()
 
         # only block for half a second at a time
         blocking_time = 0.5
+
+        for port in self.config.input_ports:
+            print("listening on port", port)
 
         while self.input_ports:
             readable, _writable, exceptional = select.select(
