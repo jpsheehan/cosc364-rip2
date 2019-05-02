@@ -39,6 +39,8 @@ The configuration module deals with the loading of configuration data from disk,
 
 - [X] Send triggered update only when routes become invald (i.e when router sets metric to 16). Triggered updates do not contain the entire routing table, only the routes that have had their metric set to 16.
 
+- [ ] Check incoming packets have a valid checksum and that the data is also legal in RIP (nexthop and destination routerID should match: 64000>routerID>0 and not self routerID, cost non negative and clamps at 16.
+
 ### Configuration
 
 - [X] Create some configuration files for testing.
