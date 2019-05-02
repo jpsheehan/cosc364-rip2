@@ -31,15 +31,15 @@ The configuration module deals with the loading of configuration data from disk,
 
 - [X] Print routing table to console
 
-- [ ] Periodically send routing table to socket for each input port. If any first hops in the table match the neighbor then change the metric to be infinite(16). This implements split horizon with poison reverse.
+- [X] Periodically send routing table to socket for each input port. If any first hops in the table match the neighbor then change the metric to be infinite(16). This implements split horizon with poison reverse.
 
 - [X] Periodically traverse routing table and update each age entry. If age is greater than timeout then set metric to infinite(16), reset the age and set garbage flag to TRUE. If garbage flag is TRUE and age > 6*timeout, delete the entry.
 
-- [ ] Read from sockets. Update the routing table if there is a new destination without infinite cost. For a known destination, if the table metric is greater than (packet metric + linkcost), reset age and update the table with new route. Reset the age of all entries in the table that were recieved but unchanged (i.e same dest,nexthop and cost). For routes with the same dest, nexthop and infinite cost, update cost to infinite (trigger update), reset age but set garbage flag to TRUE
+- [X] Read from sockets. Update the routing table if there is a new destination without infinite cost. For a known destination, if the table metric is greater than (packet metric + linkcost), reset age and update the table with new route. Reset the age of all entries in the table that were recieved but unchanged (i.e same dest,nexthop and cost). For routes with the same dest, nexthop and infinite cost, update cost to infinite (trigger update), reset age but set garbage flag to TRUE
 
-- [ ] Send triggered update only when routes become invald (i.e when router sets metric to 16). Triggered updates do not contain the entire routing table, only the routes that have had their metric set to 16.
+- [X] Send triggered update only when routes become invald (i.e when router sets metric to 16). Triggered updates do not contain the entire routing table, only the routes that have had their metric set to 16.
 
 ### Configuration
 
 - [X] Create some configuration files for testing.
-- [ ] Create some tests for the configuration file.
+- [X] Create some tests for the configuration file.
