@@ -163,8 +163,7 @@ class Server:
                 is_destination_garbage = destination_entry.garbage
                 # Flood triggered update. If we are using that route then also begin garbage collection. 
                 if packet.triggered and not is_destination_garbage:
-                    if route_next_hop == destination_entry.nextHop:
-                        self.rt.set_garbage(route_destination, True)
+                    self.rt.set_garbage(route_destination, True)
                     triggered_updates.append(destination_entry)
                     self.log("marked " + str(route_destination) + " as garbage")
 
