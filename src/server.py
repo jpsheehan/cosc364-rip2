@@ -209,7 +209,7 @@ class Server:
                 } for route in routes]
 
             self.log("sending triggered updates to " + str(output_port.router_id))
-            p = protocol.Packet(output_port.cost, packet_routes, 1)
+            p = protocol.Packet(output_port.cost, packet_routes)
             sock.sendto(p.to_data(), ('localhost', output_port.port))
 
     def start(self):
