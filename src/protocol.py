@@ -56,13 +56,12 @@ class Packet:
         A Packet is used to send and receive updates from other RIP routers.
     """
 
-    def __init__(self, link_cost = -1, routes = [], triggered=0):
+    def __init__(self, link_cost = -1, routes = []):
         """
             Creates a new Packet.
         """
         self.link_cost = link_cost
         self.routes = routes
-        self.triggered = triggered
     
     def from_data(self, data):
         """
@@ -74,7 +73,6 @@ class Packet:
         if d is not None:
             self.link_cost = d["link-cost"]
             self.routes = d["routes"]
-            self.triggered = d["triggered"]
             return True
         else:
             return False
@@ -86,7 +84,6 @@ class Packet:
         return encode({
             "link-cost": self.link_cost,
             "routes": self.routes,
-            "triggered": self.triggered
         })
 
     

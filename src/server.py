@@ -90,11 +90,8 @@ class Server:
                 cost = route.cost
                 destination = route.destination
                 
-                # poison reverse
-                if self.rt[destination].nextHop == output_port.router_id: # and destination != output_port.router_id:
-                    cost = 16
-                
-                if self.rt[destination].garbage:
+                # poison reverse by setting cost to 16 when announcing routes back from where they were learned
+                if self.rt[destination].nextHop == output_port.router_id:
                     cost = 16
 
                 routes.append({
@@ -126,9 +123,6 @@ class Server:
             self.log("invalid packet hash")
             return
 
-        if packet.triggered:
-            self.log("got a triggered updates from " + str(packet.routes[0]["next-hop"]))
-
         for route in packet.routes:
 
             route_destination = route["destination"]
@@ -136,61 +130,63 @@ class Server:
             route_next_hop = route["next-hop"]
 
             destination_entry = self.rt[route_destination]
-            # next_hop_entry = self.rt[route_next_hop]
 
             is_destination_in_table = destination_entry is not None
-            # is_next_hop_in_table = next_hop_entry is not None
             
             is_destination_unreachable = route_cost >= 16
-            # is_next_hop_unreachable = packet.link_cost >= 16
-
-            # is_destination_a_neighbor = route_next_hop == route_destination
 
             total_destination_cost = route_cost + packet.link_cost
 
             if route_destination == self.config.router_id:
                 continue
 
-
+            # New valid route
             if not is_destination_in_table and not is_destination_unreachable:
 
                 # put the destination in the table
                 self.rt.add_entry(route_destination, route_next_hop, total_destination_cost)
                 self.log("added new router " + str(route_destination) + " via " + str(route_next_hop) + " with a cost of " + str(total_destination_cost))
             
+            # Route already exists in table
             elif is_destination_in_table:
 
                 is_destination_garbage = destination_entry.garbage
-                # Flood triggered update. If we are using that route then also begin garbage collection. 
-                if packet.triggered and not is_destination_garbage:
-                    self.rt.set_garbage(route_destination, True)
-                    triggered_updates.append(destination_entry)
-                    self.log("marked " + str(route_destination) + " as garbage")
 
-
+                # Check for a better route.
                 if total_destination_cost < destination_entry.cost:
-
-                    # if not is_destination_garbage:
-                    # update the cost and the hop in the table
                     self.rt.set_cost(route_destination, total_destination_cost)
                     self.rt.set_garbage(route_destination, False)
                     self.rt.set_next_hop(route_destination, route_next_hop)
-                    self.log("found new route to " + str(route_destination) + " via " + str(route_next_hop) + " with a cost of " + str(total_destination_cost))
-                
-                elif route_next_hop == destination_entry.nextHop:
 
-                    if not is_destination_unreachable and not is_destination_garbage:
-                        # keep alive
+                    self.log("found new route to " + str(route_destination) + " via " + str(route_next_hop) + " with a cost of " + str(total_destination_cost))
+
+                # Check for worse route from the same hop
+                elif route_next_hop == destination_entry.nextHop and total_destination_cost > destination_entry.cost:
+                    if is_destination_unreachable:
+                        # garbage it if we haven't seen it before, otherwise ignore it
+                        if not is_destination_garbage:
+                            self.rt.set_garbage(route_destination, True)
+                            triggered_updates.append(destination_entry)
+                            self.log("processed a triggered update from " + str(packet.routes[0]["next-hop"]) + " marked " + str(route_destination) + " as garbage")
+                    
+                    # We got a worse route from the samehop but its not infinite. As a neighbour we MUST update to the higher cost.
+                    else:
+                        self.rt.set_cost(route_destination, total_destination_cost)
                         self.rt.reset_age(route_destination)
 
-                    elif not is_destination_garbage:
-                        # mark as garbage
-                        # trigger update
-                        self.rt.set_garbage(route_destination, True)
-                        triggered_updates.append(destination_entry)
-                        self.log("marked " + str(route_destination) + " as garbage")
-        
+                # Check for worse route from a different hop and ignore it
+                elif total_destination_cost > destination_entry.cost:
+                    #self.log("Worse route to " + str(route_destination) + " ignoring it")
+                    continue
+
+                # Check for same route and keep it alive
+                elif route_next_hop == destination_entry.nextHop and total_destination_cost == destination_entry.cost:
+                    # We dont want to keep alive infinite weight routes
+                    if not is_destination_garbage:
+                        self.rt.reset_age(route_destination)
+
         if len(triggered_updates) > 0:
+            self.log("sending triggered updates")
             self.process_triggered_updates(triggered_updates)
 
         return None
@@ -205,11 +201,10 @@ class Server:
             packet_routes = [{
                     "destination": route.destination,
                     "cost": 16,
-                    "next-hop": route.nextHop
+                    "next-hop": self.config.router_id
                 } for route in routes]
 
-            self.log("sending triggered updates to " + str(output_port.router_id))
-            p = protocol.Packet(output_port.cost, packet_routes, 1)
+            p = protocol.Packet(output_port.cost, packet_routes)
             sock.sendto(p.to_data(), ('localhost', output_port.port))
 
     def start(self):
@@ -227,8 +222,8 @@ class Server:
         self.periodic_timer.start()
         self.periodic_timer.trigger()
 
-        # only block for half a second at a time
-        blocking_time =1.0
+        # only block for a second at a time
+        blocking_time =1
 
         loop_time = time.time()
 
@@ -273,21 +268,5 @@ class Server:
             # update the loop time
             loop_time = time.time()
 
-# some tests:
 if __name__ == "__main__":
-    import config
-
-    c = config.Config()
-    c.router_id = 11
-    c.input_ports = [
-        12345,
-        12346,
-        12347
-    ]
-    c.output_ports = [
-        config.OutputPort(22345, 1, 12),
-        config.OutputPort(22346, 1, 13)
-    ]
-
-    s = Server(c)
-    s.start()
+    pass
