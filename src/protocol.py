@@ -83,7 +83,7 @@ class Packet:
         """
         return encode({
             "link-cost": self.link_cost,
-            "routes": self.routes,
+            "routes": self.routes
         })
 
     
