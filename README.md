@@ -1,6 +1,6 @@
 # cosc364-rip2
 
-A routing daemon based on the RIP-2 specification.
+A routing daemon based on the RIP-2 specification. Read the [report](https://github.com/jpsheehan/cosc364-rip2/blob/master/doc/assignment.pdf).
 
 Written by Will Cowper (<wgc22@uclive.ac.nz>) and Jesse Sheehan (<jps111@uclive.ac.nz>).
 
