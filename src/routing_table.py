@@ -48,7 +48,7 @@ class RoutingTable:
         self.reset_age(routerID)
         if isGarbage:
             self.set_cost(routerID, 16)
-
+    
     def reset_age(self, routerID):
         """
             Resets the age of the entry to 0.
