@@ -167,7 +167,7 @@ class Server:
                         if not is_destination_garbage:
                             self.rt.set_garbage(route_destination, True)
                             triggered_updates.append(destination_entry)
-                            self.log("processed a triggered update from " + str(packet.routes[0]["next-hop"]) + "marked " + str(route_destination) + " as garbage")
+                            self.log("processed a triggered update from " + str(packet.routes[0]["next-hop"]) + " marked " + str(route_destination) + " as garbage")
                     
                     # We got a worse route from the samehop but its not infinite. As a neighbour we MUST update to the higher cost.
                     else:
@@ -186,6 +186,7 @@ class Server:
                         self.rt.reset_age(route_destination)
 
         if len(triggered_updates) > 0:
+            self.log("sending triggered updates")
             self.process_triggered_updates(triggered_updates)
 
         return None
@@ -203,7 +204,6 @@ class Server:
                     "next-hop": self.config.router_id
                 } for route in routes]
 
-            self.log("sending triggered updates to " + str(output_port.router_id))
             p = protocol.Packet(output_port.cost, packet_routes)
             sock.sendto(p.to_data(), ('localhost', output_port.port))
 
@@ -222,8 +222,8 @@ class Server:
         self.periodic_timer.start()
         self.periodic_timer.trigger()
 
-        # only block for half a second at a time
-        blocking_time =1.0
+        # only block for a second at a time
+        blocking_time =1
 
         loop_time = time.time()
 
