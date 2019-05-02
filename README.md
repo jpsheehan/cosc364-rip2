@@ -39,7 +39,7 @@ The configuration module deals with the loading of configuration data from disk,
 
 - [X] Send triggered update only when routes become invald (i.e when router sets metric to 16). Triggered updates do not contain the entire routing table, only the routes that have had their metric set to 16.
 
-- [ ] Check incoming packets have a valid checksum and that the data is also legal in RIP => nexthop and destination routerID must be within the range of (0,64000] and not self routerID, cost non negative and clamps at 16.
+- [ ] Check incoming packets have a valid checksum and that the data is also legal in RIP => nexthop and destination routerID must be within the range of [1,64000] and not self routerID, cost non negative and clamps at 16.
 
 ### Configuration
 
