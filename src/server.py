@@ -151,44 +151,58 @@ class Server:
             if route_destination == self.config.router_id:
                 continue
 
-
+            # New valid route
             if not is_destination_in_table and not is_destination_unreachable:
 
                 # put the destination in the table
                 self.rt.add_entry(route_destination, route_next_hop, total_destination_cost)
                 self.log("added new router " + str(route_destination) + " via " + str(route_next_hop) + " with a cost of " + str(total_destination_cost))
             
+            # Route already exists in table
             elif is_destination_in_table:
 
                 is_destination_garbage = destination_entry.garbage
                 # Flood triggered update. If we are using that route then also begin garbage collection. 
-                if packet.triggered and not is_destination_garbage:
-                    self.rt.set_garbage(route_destination, True)
-                    triggered_updates.append(destination_entry)
-                    self.log("marked " + str(route_destination) + " as garbage")
+                # if packet.triggered and not is_destination_garbage:
+                #     self.rt.set_garbage(route_destination, True)
+                #     triggered_updates.append(destination_entry)
+                #     self.log("marked " + str(route_destination) + " as garbage")
 
-
+                # Check for a better route.
                 if total_destination_cost < destination_entry.cost:
-
-                    # if not is_destination_garbage:
-                    # update the cost and the hop in the table
                     self.rt.set_cost(route_destination, total_destination_cost)
                     self.rt.set_garbage(route_destination, False)
                     self.rt.set_next_hop(route_destination, route_next_hop)
-                    self.log("found new route to " + str(route_destination) + " via " + str(route_next_hop) + " with a cost of " + str(total_destination_cost))
-                
-                elif route_next_hop == destination_entry.nextHop:
 
-                    if not is_destination_unreachable and not is_destination_garbage:
-                        # keep alive
+                    self.log("found new route to " + str(route_destination) + " via " + str(route_next_hop) + " with a cost of " + str(total_destination_cost))
+                    continue
+
+                # Check for worse route from the same hop
+                elif route_next_hop == destination_entry.nextHop and total_destination_cost > destination_entry.cost:
+                    if is_destination_unreachable:
+                        # garbage it if we haven't seen it before, otherwise ignore it
+                        if not is_destination_garbage:
+                            self.rt.set_garbage(route_destination, True)
+                            triggered_updates.append(destination_entry)
+                            self.log("marked " + str(route_destination) + " as garbage")
+                    # We got a worse route from the samehop but its not infinite
+                    else:
+                        self.rt.set_cost(route_destination, total_destination_cost)
                         self.rt.reset_age(route_destination)
 
-                    elif not is_destination_garbage:
-                        # mark as garbage
-                        # trigger update
-                        self.rt.set_garbage(route_destination, True)
-                        triggered_updates.append(destination_entry)
-                        self.log("marked " + str(route_destination) + " as garbage")
+                # Check for worse route from a different hop and ignore it
+                elif total_destination_cost > destination_entry.cost:
+                    #self.log("Worse route to " + str(route_destination) + " ignoring it")
+                    continue
+
+
+                # Check for same route and keep it alive
+                elif route_next_hop == destination_entry.nextHop and total_destination_cost == destination_entry.cost:
+                    # We dont want to keep alive infinite weight routes
+                    if not is_destination_unreachable or not is_destination_garbage:
+                        self.rt.reset_age(route_destination)
+
+
         
         if len(triggered_updates) > 0:
             self.process_triggered_updates(triggered_updates)
