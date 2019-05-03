@@ -160,13 +160,3 @@ class RoutingTable:
                 route.destination, route.nextHop, route.cost, round(route.age, 2), route.garbage))
         s.append("+------------+------------+------------+------------+------------+")
         return os.linesep.join(s)
-
-
-# runs a simple test
-if __name__ == "__main__":
-    current_directory = os.path.dirname(__file__)
-    parent_directory = os.path.split(current_directory)[0]
-    file_path = os.path.join(parent_directory, 'configs/good/01.conf')
-    config = config.open_config_file(file_path)
-    r = RoutingTable(config)
-    print(r)

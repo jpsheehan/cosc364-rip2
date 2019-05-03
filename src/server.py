@@ -305,6 +305,3 @@ class Server:
             
             # update the loop time
             loop_time = time.time()
-
-if __name__ == "__main__":
-    pass
