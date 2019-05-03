@@ -33,6 +33,7 @@
 \usepackage{pdfpages}
 \usepackage{amsmath,mathtools,amsfonts}
 \usepackage{bm}
+\usepackage{float}
 \usepackage{listings}\usepackage{color}
 
 \definecolor{mygreen}{rgb}{0,0.6,0}
@@ -113,7 +114,7 @@
 
 \section{Questions} \label{questions}
 
-As required, the following questions have been answered:
+The configuration files of the example network can be found in sections \ref{figure1-start} to \ref{figure1-end}. The following questions have been answered:
 
 \subsection{Contribution}
 The contribution toward the entire project was an even split. We both felt as though the work we had contributed was worth 50\% each.
@@ -151,7 +152,15 @@ We created many configuration files for testing our config module. Some configur
 
 Once we had most of the program working we had to create test configuration files for entire networks. We found this process to be very tedious and so, wrote a program to generate these files for us (see section \ref{generatenet}). Our testing became much easier after this as we didn't have to manually write these configuration files.
 
+When testing an entire network, we would manually calculate the best routes by hand using the Bellman-Ford algorithm. We would then run the program and check that the routing table for each router converged to what we expected. We also tested our hypotheses for when an individual router was brought down using the same method. This would quite often reveal issues or bugs in our implementation that we could fix.
+
 % Needs more?
+\begin{figure}[H]
+	\centering
+	\label{fig:six-node}
+	\includegraphics[width=0.8\textwidth]{includes/images/six-node}
+	\caption{The "six-node" network as described in sections \ref{six-node-start} to \ref{six-node-end}.}
+\end{figure}
 
 \newpage
 \section{Appendices}
@@ -188,7 +197,7 @@ Once we had most of the program working we had to create test configuration file
 \newpage
 \subsection{Configuration Files}
 
-\subsubsection{configs/networks/figure1/1.conf}
+\subsubsection{configs/networks/figure1/1.conf} \label{figure1-start}
 \lstinputlisting{../configs/networks/figure1/1.conf}
 
 \subsubsection{configs/networks/figure1/2.conf}
@@ -206,8 +215,26 @@ Once we had most of the program working we had to create test configuration file
 \subsubsection{configs/networks/figure1/6.conf}
 \lstinputlisting{../configs/networks/figure1/6.conf}
 
-\subsubsection{configs/networks/figure1/7.conf}
+\subsubsection{configs/networks/figure1/7.conf} \label{figure1-end}
 \lstinputlisting{../configs/networks/figure1/7.conf}
+
+\subsubsection{configs/networks/six-node/01.conf} \label{six-node-start}
+\lstinputlisting{../configs/networks/six-node/01.conf}
+
+\subsubsection{configs/networks/six-node/02.conf}
+\lstinputlisting{../configs/networks/six-node/02.conf}
+
+\subsubsection{configs/networks/six-node/03.conf}
+\lstinputlisting{../configs/networks/six-node/03.conf}
+
+\subsubsection{configs/networks/six-node/04.conf}
+\lstinputlisting{../configs/networks/six-node/04.conf}
+
+\subsubsection{configs/networks/six-node/05.conf}
+\lstinputlisting{../configs/networks/six-node/05.conf}
+
+\subsubsection{configs/networks/six-node/06.conf} \label{six-node-end}
+\lstinputlisting{../configs/networks/six-node/06.conf}
 
 \newpage
 \subsection{Other Files}
