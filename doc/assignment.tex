@@ -146,10 +146,12 @@ In order to ensure the atomicity of events in our program we have made use of ti
 
 \subsection{Testing} \label{testing}
 
-Many of the smaller functions in the project were discrete enough that we could use doctests on them. %Once many functions in a module were working well and passing doctests, we were also able to test the module as a whole, by using many functions together and testing them. This led to us discovering that some of our functions weren't returning the correct values or weren't accepting the right parameters, etc. After getting an entire module working properly, we focussed on combining several modules together in a new module and testing that. Because of the amount of things we needed to test we didn't bother with writing any test cases. This was perhaps a poor decision in terms of testing.
-We created many configuration files for testing our config module. Some were well-formed and some were not. This allowed us to make sure that our config module worked as expected.
+Many of the smaller functions in the project were discrete enough that we could use doctests on them.
+We created many configuration files for testing our config module. Some configuration files were well-formed and some were not. This allowed us to make sure that our config module worked as expected.
 
-Once we had most of the program working and had to create test configuration files for entire networks. We found this process to be very tedious and so, wrote a program to generate these files for us (see section \ref{generatenet}). Our testing became much easier after this as we didn't have to manually write these configuration files.
+Once we had most of the program working we had to create test configuration files for entire networks. We found this process to be very tedious and so, wrote a program to generate these files for us (see section \ref{generatenet}). Our testing became much easier after this as we didn't have to manually write these configuration files.
+
+% Needs more?
 
 \newpage
 \section{Appendices}
