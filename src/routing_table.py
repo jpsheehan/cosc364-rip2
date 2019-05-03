@@ -111,10 +111,12 @@ class RoutingTable:
 
         for route in self.__routes:
             if route.age > 10 and not route.garbage:
+                self.log("marked router " + str(route.destination) + " as garbage")
                 self.set_garbage(route.destination, True)
                 triggered_routes.append(route)
 
             if route.age > 20 and route.garbage:
+                self.log("purged router " + str(route.destination) + " from database")
                 remove_routes.append(route)
 
         if len(triggered_routes) != 0:
