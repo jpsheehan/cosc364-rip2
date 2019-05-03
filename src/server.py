@@ -110,6 +110,26 @@ class Server:
         self.loglines.append(message)
         while len(self.loglines) > 10:
             self.loglines = self.loglines[1:]
+    
+    def is_valid_route(self, destination, cost, next_hop):
+        """
+            Returns true if the route is valid.
+        """
+            
+        # route contains a negative cost and should be dropped 
+        if cost < 0:
+            return False
+        
+        # validate the router id of destination
+        if destination < 1 or destination > 64000:
+            return False
+        
+        # validate the router id of next hop
+        if next_hop < 1 or next_hop > 64000:
+            return False
+        
+        return True
+
 
     def process_incoming_data(self, addr, data):
         """
@@ -121,6 +141,9 @@ class Server:
         
         if not packet.from_data(data):
             self.log("invalid packet hash")
+            return
+        
+        if packet.link_cost < 0:
             return
 
         for route in packet.routes:
@@ -137,12 +160,12 @@ class Server:
             if route_destination == self.config.router_id or route_next_hop == self.config.router_id:
                 continue
             
-            # route contains a negative cost and should be dropped 
-            if (route_cost < 0) or (packet.link_cost < 0):
+            # don't process if the route is invalid
+            if not self.is_valid_route(route_destination, route_cost, route_next_hop):
                 continue
 
             # route is valid and should be processed
-
+    
             # total cost is the link cost added to the cost contained in the packet
             total_destination_cost = route_cost + packet.link_cost
 
