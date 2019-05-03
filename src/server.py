@@ -131,15 +131,29 @@ class Server:
 
             destination_entry = self.rt[route_destination]
 
-            is_destination_in_table = destination_entry is not None
+            """ Check route is valid before any processing is done"""
+            # route lists ourself as the destination (useless) or as the next hop (invalid) and should be dropped
+            if route_destination == self.config.router_id or route_next_hop == self.config.router_id:
+                continue
             
-            is_destination_unreachable = route_cost >= 16
-
-            total_destination_cost = route_cost + packet.link_cost
-
-            if route_destination == self.config.router_id:
+            # route contains a negative cost and should be dropped 
+            if (route_cost < 0) or (packet.link_cost < 0):
                 continue
 
+            """ route is valid and should be processed"""
+
+            # total cost is the link cost added to the cost contained in the packet
+            total_destination_cost = route_cost + packet.link_cost
+
+            is_destination_unreachable = (total_destination_cost >= 16)
+
+            # clamp cost to maximum of 16
+            if is_destination_unreachable:
+                total_destination_cost = 16
+
+            # is the destination routerID knonwn
+            is_destination_in_table = destination_entry is not None
+            
             # New valid route
             if not is_destination_in_table and not is_destination_unreachable:
 
