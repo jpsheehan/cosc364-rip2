@@ -152,7 +152,7 @@ class Server:
             if is_destination_unreachable:
                 total_destination_cost = 16
 
-            # is the destination routerID knonwn
+            # is the destination routerID known
             is_destination_in_table = destination_entry is not None
             
             # New valid route
