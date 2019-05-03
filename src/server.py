@@ -131,7 +131,8 @@ class Server:
 
             destination_entry = self.rt[route_destination]
 
-            """ Check route is valid before any processing is done"""
+            # Check route is valid before any processing is done
+
             # route lists ourself as the destination (useless) or as the next hop (invalid) and should be dropped
             if route_destination == self.config.router_id or route_next_hop == self.config.router_id:
                 continue
@@ -140,7 +141,7 @@ class Server:
             if (route_cost < 0) or (packet.link_cost < 0):
                 continue
 
-            """ route is valid and should be processed"""
+            # route is valid and should be processed
 
             # total cost is the link cost added to the cost contained in the packet
             total_destination_cost = route_cost + packet.link_cost
