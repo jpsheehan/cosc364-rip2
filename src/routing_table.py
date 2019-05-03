@@ -25,12 +25,13 @@ class RoutingTable:
         The RoutingTable represents the list of RoutingTableEntries for a router.
     """
 
-    def __init__(self, config):
+    def __init__(self, config, logging_function = None):
         """
             Creates a new RoutingTable based on the Config.
         """
         self.__routes = []
         self.routerID = config.router_id
+        self.__logging_function = logging_function
 
     def add_entry(self, destination, nextHop, totalCost):
         """
@@ -48,6 +49,12 @@ class RoutingTable:
         self.reset_age(routerID)
         if isGarbage:
             self.set_cost(routerID, 16)
+    
+    def log(self, message):
+        if self.__logging_function is not None:
+            self.__logging_function(message)
+        else:
+            print(message)
     
     def reset_age(self, routerID):
         """
