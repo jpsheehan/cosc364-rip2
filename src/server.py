@@ -238,7 +238,7 @@ class Server:
         self.periodic_timer.trigger()
 
         # only block for a second at a time
-        blocking_time =1
+        blocking_time = 0.1
 
         loop_time = time.time()
 
