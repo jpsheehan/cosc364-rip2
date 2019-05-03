@@ -82,8 +82,8 @@ class Server:
                     "next-hop": self.config.router_id
                 }]
             
-            if len(self.rt) == 0:
-                self.log("advertising self to " + str(output_port.router_id))
+            # if len(self.rt) == 0:
+            #     self.log("advertising self to " + str(output_port.router_id))
 
             for route in self.rt:
                 
