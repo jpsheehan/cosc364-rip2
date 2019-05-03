@@ -125,16 +125,21 @@ The contribution toward the entire project was an even split. We both felt as th
 Some of the smaller modules in our codebase have been implemented quite well. For example, the Timer and Bencode modules have a very focused purpose and were discrete enough to be able to be doctested.
 We found that making use of recursion in the Bencode module reduced the complexity that would have otherwise occurred.
 The Timer module has many features that we didn't end up using but could be useful in the future if we decided to continue developing this project.
-We also had a clean user-interface that clearly displays the current routing table and some other information about the router.
+We also had a clean user-interface (see figure\ \ref{fig:interface}) that clearly displays the current routing table and some other information about the router.
 Our protocol adds a CRC32 checksum to the data being sent, this is checked when the packet is received and dropped if it is incorrect. This protects our routers from receiving garbled packets.
 
-
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{includes/images/interface}
+	\caption{The user interface of our router.}
+	\label{fig:interface}
+\end{figure}
 
 % Which aspects of your overall program could be improved?
 The overall system design could be improved.
 We rewrote some modules several times in order to get it to feel as though it would be easy to work with.
 We would also spend more time planning the project and understanding the exact steps required to implement the specification.
-Our current solution only receives at most 4096 bytes of data when reading a packet, this means that we can only send a maximum of 81 full router table entries in a packet. This could become an issue if we had a router with more than 80 directly connected neighbors but could be overcome by sending another packet with the remaining entries.
+Our current solution only receives at most 4096 bytes of data when reading a packet, this means that we can only send a maximum of 81 full router table entries in a packet. This would become an issue if we had a router with more than 80 directly connected neighbors as we don't honour the RIP specification of limiting packets to a of maximum 25 entries. This could be overcome by fragmenting the entries and sending multiple packets with these entries.
 
 
 \subsection{Event Processing} \label{event_processing}
@@ -148,19 +153,30 @@ In order to ensure the atomicity of events in our program we have made use of ti
 \subsection{Testing} \label{testing}
 
 Many of the smaller functions in the project were discrete enough that we could use doctests on them.
-We created many configuration files for testing our config module. Some configuration files were well-formed and some were not. This allowed us to make sure that our config module worked as expected.
 
 Once we had most of the program working we had to create test configuration files for entire networks. We found this process to be very tedious and so, wrote a program to generate these files for us (see section \ref{generatenet}). Our testing became much easier after this as we didn't have to manually write these configuration files.
 
-When testing an entire network, we would manually calculate the best routes by hand using the Bellman-Ford algorithm. We would then run the program and check that the routing table for each router converged to what we expected. We also tested our hypotheses for when an individual router was brought down using the same method. This would quite often reveal issues or bugs in our implementation that we could fix.
+When testing an entire network, we would manually calculate the best routes by hand using the Bellman-Ford algorithm. We would then run the program and check that the routing table for each router converged to what we expected. We also tested our hypotheses for when an individual router was brought down using the same method. This would quite often reveal issues or bugs in our implementation that we could fix.\\
 
-% Needs more?
+\noindent Given the "six-node" network (figure\ \ref{fig:sixnode}) below, the following tests were performed:
+
 \begin{figure}[H]
 	\centering
-	\label{fig:six-node}
 	\includegraphics[width=0.8\textwidth]{includes/images/six-node}
 	\caption{The "six-node" network as described in sections \ref{six-node-start} to \ref{six-node-end}.}
+	\label{fig:sixnode}
 \end{figure}
+
+\begin{itemize}
+\item \textbf{Configuration testing} - We created many configuration files for testing our config module. Some configuration files were well-formed and some were not. This allowed us to make sure that our config module worked as expected. For example, an empty config file would generate an error by our config parser. Another example, a config file with missing or invalid data.
+\item \textbf{Brief outage} - Bringing a router down and then back up before the deletion process begins. We expected all routes using that router as a next hop would increase the age of the of their routing table entry but there would be no other change in the route entry or triggered updates/etc.
+\item \textbf{Longer outage} - Bringing a router down and then waiting to bring the router back up after the deletion process begins but before it is purged from the other router's routing tables. We expected route poisoning to propogate through the network and routes to reconverge. When the router comes back up we expect all router table costs to return to their initial converged state. There is no guarantee that the next-hops will be the same. For example, if there are two or more routes with the same total cost to a common destination. In figure\ \ref{fig:sixnode} this can be seen at R2 which can reach R3 directly with a cost of 2 or through R1 with a cost of 2.
+\item \textbf{Prolonged outage} - Bringing a router down and waiting for it to be purged from all routing tables. We expected the same behaviour as for the previous case with the route poisoning and reconvergence, as well as eventual purging of the downed router. When the router is brought back up, the router should be rediscovered by its neighbors and propogated by periodic updates. The network should converge to a state similar to the initial converged state (the route costs should be the same, but the next hops may be different).
+\item \textbf{Multiple outages} - The previously described outage tests were performed again but by bringing down multiple routers at the same time instead. We expect the same correct behaviour (but obviously more widespread in some cases). For example, in the case of a router having all its directly connected neighbors brought offline, we would expect the routing table to be empty. Another example, all routers except R4 and R6 are brought down, this forces R4 and R6 to reach each other via the direct link with a cost of 15.
+\item \textbf{Router significance} - Bringing down a router which isn't a next-hop router except for its directly neighbors (R6 in figure\ \ref{fig:sixnode}) We expect no reconvergence to take place. Comparing this behaviour with a router that is used by many routes, we would expect a great deal of reconvergence to take place by all routers whose routes use this router in their paths (R4 in figure\ \ref{fig:sixnode} has many neighbors that can be reached at low cost).
+\end{itemize}
+
+\noindent Often these tests would fail but we iterated on our source code and fixed the issues. Ultimately, we believe we have a bug-free implementation of the RIP protocol as described in the project specification.
 
 \newpage
 \section{Appendices}
