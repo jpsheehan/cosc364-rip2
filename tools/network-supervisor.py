@@ -84,7 +84,7 @@ def get_subprocess(root, network, router):
     fullpath = os.path.abspath(os.path.join(root, network, router))
 
     if os.name == "posix":
-        return subprocess.Popen("gnome-terminal --title \"Router {0}\" --window -e \"bash -c \\\"python3 src {1}\\\"\"")
+        return subprocess.Popen("gnome-terminal --title \"Router {0}\" --window -e \"bash -c \\\"python3 src {1}\\\"\"".format(router, fullpath))
 
     elif os.name == "nt":
         return subprocess.Popen("start \"Router {0}\" cmd /K python src {1}".format(router, fullpath), shell=True)
