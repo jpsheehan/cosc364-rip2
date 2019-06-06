@@ -10,6 +10,15 @@ To run the program, execute
 python3 src config_filename.conf
 ```
 
+## Grade
+
+Overall Grade: 96% / A+
+
+Comments: Deductions to the ‘objective marks’ have been applied because the documentation
+was good but not great on testing, and because in checking received packets you
+forgot to test them for the metric values being larger than 16.
+
+
 ## Modules
 
 A module is just a single part of the overall program. It would be useful to break the assignment down into discrete problems that can be dealt with individually.
@@ -39,7 +48,7 @@ The configuration module deals with the loading of configuration data from disk,
 
 - [X] Send triggered update only when routes become invald (i.e when router sets metric to 16). Triggered updates do not contain the entire routing table, only the routes that have had their metric set to 16.
 
-- [ ] Check incoming packets have a valid checksum and that the data is also legal in RIP => nexthop and destination routerID must be within the range of [1,64000] and not self routerID, cost non negative and clamps at 16.
+- [X] Check incoming packets have a valid checksum and that the data is also legal in RIP => nexthop and destination routerID must be within the range of [1,64000] and not self routerID, cost non negative and clamps at 16.
 
 ### Configuration
 
